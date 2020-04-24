@@ -1,0 +1,419 @@
+
+
+```{r, load_libs, message = FALSE, warning = FALSE, echo = FALSE, results = 'hide'}
+library(prodlim)
+library(survival)
+library(flexsurv)
+library(rpart)
+library(pec)
+library(ipred)
+library(randomForestSRC)
+library(mboost)
+library(tidymodels)
+library(cli)
+library(kableExtra)
+library(knitr)
+opts_chunk$set(comment = NA, tidy = FALSE, digits = 3,
+               warning = FALSE, message = FALSE)
+options(width = 100, digits = 3)
+```
+
+# Survival Methods in tidymodels
+
+There is significant interest in creating infrastructure for modeling censored data using the tidymodels packages. This document is a summary and discussion of what needs to be done and a survey of many of the modeling approaches existing in R. 
+
+We'd like to get feedback, edits, and/or contributions. Please add issues or a pull request in case for those. API suggestions are very welcome. 
+
+# Missing components and open questions
+
+What needs to be developed for tidymodels? `parsnip` already contains some simple wrappers for parametric survival models but, to really be useful, there is a fair amount of infrastructure needed. 
+
+This can be broken down into a few parts: 
+
+ 1. model fit wrapper for `parsnip`
+ 
+ 2. new predictions _types_ 
+ 
+ 3. performance metrics for censored data.
+
+The first item is fairly straight-forward. Since `parsnip` wraps model functions, this should be the easy part. 
+
+There is some work for the second item. Many applications of censored data are less focused on predicting the actual event time; the focus is often on predicting the probability of the event (e.g. death) at specific times. For this, a new prediction type is needed. Instead of using `type = "prob"`, a different values could be used (e.g. `type = "hazard"` or `type = "survival"`). However, these predictions are _dynamic_ since they are made at specific time points. For this reason, `parsnip` and other packages will require a specific argument for the time of interest (I nominate a common argument name of `.time`). 
+
+Since this is a big difference, it may be helpful to define a new `parsnip` model mode, perhaps called "risk prediction" or "censored regression" so that we can delineate the problem. For example, there is an `rpart` engine for `decision_tree()` that can be used for classification or regression. Without another mode, there would be conflicts or the need to make alternate function names (e.g. `survival_decision_tree()`, which is less attractive). 
+
+The third item, performance metrics, will also require some minor modifications for dynamic predictions. A standard argument will be required for survival metrics that tell the function what column has the time of interest. 
+
+What about `Surv()`? This function is a mainstay of survival analysis in S and R. It encapsulates the event time(s) and the censoring indicator. Most functions standardize on this format. 
+
+The main issue is that, within data frames, it might be difficult to work with. For example:
+
+```{r surv-obj}
+library(survival)
+library(tidymodels)
+
+data(lung) # usually use `Surv(time, status)` for these data
+
+surv_obj <- Surv(lung$time, lung$status)
+is.vector(surv_obj)
+is.matrix(surv_obj)
+
+lung$surv <- surv_obj
+head(lung)
+
+lung_tbl <- as_tibble(lung)
+lung_tbl$surv <- surv_obj
+lung_tbl %>% slice(1:6)
+```
+
+Typically, `Surv` objects are not added as columns but are used when the model formula is specified. For tidymodels, there may be some added complexity since special, model-specific formulas might be needed to use workflows. This is very similar to special formulas for generalized additive models and mixed models.  
+
+It would probably be better to leave the columns alone and use `Surv()` in the model formula. However, for recipes, the censoring column might get treated as a predictor or outcome so a special role might be helpful to make sure that the data are properly handled during model fitting. 
+ 
+# Where to start
+
+
+## Metrics
+
+The cleanest place to start this work is to create `yardstick` metric functions since these are model-agnostic. The concordance statistic uses a static, event time prediction and would be very straight-forward to wrap the function from the survival package. 
+
+For dynamic metrics, such as the prediction error curve or survival ROC metrics, the problem is a little more complex since an interface entry point is needed for the time points of interest. 
+
+`metric_set()` will need to have a new `class` attribute. For example, depending on the type of prediction needed for a metric, this attribute is either `class_metric`, `prob_metric`, or `numeric_metric`. We'll need new classes for static and dynamic metrics.
+
+## Model fitting
+
+Once an official name for the new mode is determined, engines can be added for models like `surv_reg()`, `decision_tree()`, `rand_forest()`, and others. Some details are below for possible models. To begin, we should be relatively selective for picking new models/engines.  
+
+## Prediction functions
+
+These is a fair amount of complexity in the prediction modules. The type and format of return results from `predict()` methods can be very different and un-tidy. This alone raises the complexity of the problem. 
+
+For some models, there will have to be different sub-modules for probability predictions that depend on the statistical distribution of the data. For example, `survreg` can use a few different distributions and translating the estimated parameters to these probabilities can be complicated. Some of this, and other details, is already handled by the `pec` package (as will be seen below). Also `mlr3` has implemented these too so, at the least, good test cases will be available.  
+
+As previously mentioned, `predict(x, type = "survival")` will have a mandatory `.time` argument for dynamic predictions. 
+
+Also, the convention in tidymodels is, when predicting, to produce a tibble with as many rows as `new_data` and standardized column names. For static predictions, `.pred_time` is reasonable and `.pred_survival` and `.pred_hazard` might be used for the two respective probabilities.  
+
+If dynamic predictions are made, the result will be nested tibbles. For example, if there were two samples being predicted at three time points, the structure should look like: 
+
+```{r nested-calcs, include = FALSE}
+fitw <-
+  flexsurvreg(formula = Surv(futime, fustat) ~ age,
+              data = ovarian,
+              dist = "weibull")
+times <- 
+  summary(fitw, ovarian[1:2,], type = "mean") %>% 
+  bind_rows() %>% 
+  select(.pred_time = est) %>% 
+  as_tibble()
+
+probs <- 
+  summary(fitw, ovarian[1:2,], type = "hazard", t = c(100, 200, 500)) %>% 
+  map_dfr(~ select(.x, .time = time, .pred_hazard = est)) %>% 
+  mutate(.row = rep(1:2, each = 3)) %>% 
+  group_nest(.row, .key = ".pred") %>% 
+  select(-.row)
+  
+pred_vals <- bind_cols(times, probs)
+```
+```{r nested-pred}
+pred_vals
+
+pred_vals$.pred[[1]]
+
+tidyr::unnest(pred_vals, cols = c(.pred))
+```
+
+
+
+
+# Possible models
+
+
+
+First, let's simulate some data:
+
+```{r, simulate}
+library(prodlim)
+set.seed(43500)
+train_dat <- SimSurv(200)
+set.seed(2721)
+test_dat <- SimSurv(2)
+test_dat
+
+test_pred <- test_dat[, 5:6]
+
+# We will predict at these time points
+.times <- c(1, 5, 10)
+```
+
+## Parametric Models
+
+### `survival:::`[`survreg`](https://rdrr.io/cran/survival/man/survreg.html)
+
+The model fitting function: 
+
+```{r, survreg_fit}
+library(survival)
+sr_mod <- survreg(Surv(time, status) ~ (X1 + X2)^2, data = train_dat)
+```
+
+The `predict()` function can generate predictions for the event time and/or percentiles of the survival function via 
+
+```{r, survreg_pred}
+predict(sr_mod, test_pred)
+predict(sr_mod, test_pred, type = 'quantile', p = c(.1, .5, .9))
+```
+
+Note that the latter is in terms of the time units and are not probabilities of survival by a specified time. Since these are parametric models, probablity values can be derived indirectly. 
+
+### `flexsurv::`[`flexsurvreg`](https://rdrr.io/cran/flexsurv/man/flexsurvreg.html)
+
+The main parametric fitting function is 
+
+```{r, flxs_fit}
+library(flexsurv)
+flxs_mod <-
+  flexsurvreg(Surv(time, status) ~ (X1 + X2) ^ 2,
+              data = train_dat,
+              dist = "weibull")
+```
+
+Prediction is done using the `summary()` method and the results come back as a data frame with `tidy = TRUE`: 
+
+```{r, flxs_pred}
+# Event time prediction
+summary(flxs_mod, test_pred, type = "mean", tidy = TRUE)
+
+# Probabilities
+summary(flxs_mod, test_pred, type = "survival", t = .times, tidy = TRUE)
+
+# Same for type = "hazard"
+```
+
+The `flexsurvspline()` function has the same interface. 
+
+
+## Cox PH Models
+
+### `survival:::`[`coxph`](https://rdrr.io/cran/survival/man/coxph.html)
+
+```{r, cox_fit}
+cph_mod <- coxph(Surv(time, status) ~ (X1 + X2)^2, data = train_dat, x = TRUE)
+```
+
+Both restricted mean survival time (RMST) and survival function probabilities at specific times can be predicted with `summary.survit()`:
+
+```{r, cph_prob}
+cph_surv <- summary(survfit(cph_mod, newdata = test_pred), times = .times) 
+
+# Event time prediction (RMST)
+cph_surv$table
+
+# Survival probabilities
+cph_surv 
+```
+
+Survial probabilities can also be predicted using the `pec` package;
+
+```{r, cph_prob_pec}
+predictSurvProb(cph_mod, newdata = test_pred, times = .times)
+```
+
+See the document "cox_notes_extra" for more notes about this model. 
+
+
+### `glmnet`
+
+The model fitting input for the predictors is a matrix and the response data should be a `Surv()` object. We would have to make a new column for the interaction effect. 
+
+```{r glmn-fit}
+library(glmnet)
+glmn_fit <- glmnet(x = as.matrix(train_dat[, c("X1", "X2")]), 
+                   y = Surv(train_dat$time, train_dat$event),
+                   family = "cox")
+```
+
+`glmnet` produces predictions across a variety of penalty values. The relative-risk can be obtained using `type = "response"`: 
+
+```{r glmn-pred}
+predict(glmn_fit, as.matrix(test_pred), type = "response")
+```
+
+## `mboost` models
+
+The `mboost` package has a suite of functions for fitting boosted models whose base learners are either trees, GLM's, or GAM's. Each can take an argument of `family = CoxPH()` and each can make predictions on the linear predictor. 
+
+For example, for a GLM model: 
+
+```{r glm-boost-fit}
+library(mboost)
+glmb_mod <-
+  glmboost(Surv(time, status) ~ X1 + X2,
+             data = train_dat,
+             family = CoxPH())
+predict(glmb_mod, test_pred)
+```
+
+## Tree-Based Models
+
+### `rpart:::`[`rpart`](https://rdrr.io/cran/rpart/man/rpart.html)
+
+```{r, rpart_fit}
+library(rpart)
+rp_mod <- rpart(Surv(time, status) ~ X1 + X2, data = train_dat)
+```
+
+The basic invocation of `predict` generates the predicted event time:
+
+```{r, rpart_pred}
+predict(rp_mod, test_pred)
+```
+
+The `pec` package can be used to fit an augmented `rpart` model and, from this, we can get the survivor probabilities:
+
+```{r, rpart_prob}
+pec_rpart_mod <- pecRpart(Surv(time, status) ~ X1 + X2, data = train_dat)
+predictSurvProb(pec_rpart_mod, newdata = test_pred, times = .times)
+```
+
+### `ipred:::`[`bagging`](https://rdrr.io/cran/ipred/man/bagging.html)
+
+```{r, bag_fit}
+library(ipred)
+bag_mod <- bagging(Surv(time, status) ~ X1 + X2, data = train_dat)
+```
+
+When generating predictions, `survfit` objects is returned for each data point being predicted. To get survival functions including median survival:
+
+```{r, bag_pred}
+bag_preds <- predict(bag_mod, test_pred)
+bag_preds
+
+# Use summary.survfit() to get survival function (pec would also work)
+# For the first sample
+summary(bag_preds[[1]], times = .times)
+
+# Median survival
+library(purrr)
+map_dbl(bag_preds, ~ quantile(.x, probs = .5)$quantile)
+```
+
+### `party:::`[`ctree`](https://rdrr.io/cran/party/man/ctree.html)
+
+
+```{r, ctree_fit}
+library(party)
+ctree_mod <- ctree(Surv(time, status) ~ X1 + X2, data = train_dat)
+```
+
+The basic invocation of `predict` generates the predicted event time.
+
+```{r, ctree_pred}
+predict(ctree_mod, test_pred)
+```
+
+`pec` has a wrapper for this model. Since `party` uses S4 methods, this just puts the model inside of a wrapper S3 class:
+
+```{r pec-ctree}
+pec_ctree_mod <- pecCtree(Surv(time, status) ~ X1 + X2, data = train_dat)
+all.equal(ctree_mod, pec_ctree_mod$ctree)
+
+predictSurvProb(pec_ctree_mod, newdata = test_pred, times = .times)
+```
+
+### `party:::`[`cforest`](https://rdrr.io/cran/party/man/cforest.html)
+
+```{r, cforest_fit}
+library(party)
+
+set.seed(342)
+cforest_mod <-
+  cforest(Surv(time, status) ~ X1 + X2,
+          data = train_dat,
+          controls = cforest_unbiased(ntree = 100, mtry = 1))
+```
+
+The basic invocation of `predict` generates the predicted event time: 
+
+```{r, cforest_pred}
+predict(cforest_mod, newdata = test_pred)
+```
+
+Another S3 wrapper is available: 
+
+```{r pec-cforest}
+set.seed(342)
+pec_cforest_mod <-
+  pecCforest(Surv(time, status) ~ X1 + X2,
+             data = train_dat,
+             controls = cforest_unbiased(ntree = 100, mtry = 1))
+
+all.equal(cforest_mod, pec_cforest_mod$forest)
+
+predictSurvProb(pec_cforest_mod, newdata = test_pred, times = .times)
+```
+
+
+### `randomForestSRC:::`[`rfsrc`](https://rdrr.io/cran/randomForestSRC/man/rfsrc.html)
+
+```{r, rfsrc_fit}
+library(randomForestSRC)
+rfsrce_mod <- rfsrc(Surv(time, status) ~ X1 + X2, data = train_dat, ntree = 1000)
+```
+
+The `predict` function generates an object with classes `"rfsrc"`, `"predict"`, and `"surv"`. It is unclear what is being predicted:
+
+```{r, rfsrc_pred}
+predict(rfsrce_mod, test_pred)$predicted
+```
+
+The `survival` slot appears to be survival probabilities:
+
+```{r, rfsrc_prob}
+rfsrce_pred <- predict(rfsrce_mod, test_pred)
+round(rfsrce_pred$survival, 2)
+```
+
+The columns appear to correspond to the "time of interest": 
+
+```{r }
+rfsrce_pred$time.interest
+```
+
+although these values do not bracket the observed times: 
+
+```{r obs-times}
+summary(train_dat$time)
+```
+
+# Model Prediction Scorecard
+
+In most cases, the open circle means that this type of prediction is facilitated _indirectly_. For example, using "tricks" related to `survfit()`, methods in the `pec` package, or other means. 
+
+```{r pred-table, echo = FALSE, results = "asis"}
+yep <- cli::symbol$tick
+nope <- cli::symbol$cross
+kinda <- cli::symbol$circle
+
+pred_types <- 
+  tribble(
+    ~Package, ~Function, ~`pred event time`, ~`survival probs`, ~`linear pred`,
+    "`survival`",        "`survreg`",        yep,  nope,  yep,
+    "`flexsurv`",        "`flexsurvreg`",    yep,   yep,  yep,
+    "`survival`",        "`coxph`",         yep, yep,  yep,
+    "`glmnet`",          "`glmnet`",        kinda, kinda,  yep,
+    "`mboost`",          "`*boost`",        kinda, kinda,  yep,
+    "`rpart`",           "`rpart`",          yep, kinda, nope,
+    "`ipred`",           "`bagging`",        yep, kinda, nope,
+    "`party`",           "`ctree`",         yep,  kinda, nope,
+    "`party`",           "`cforest`",       yep,  kinda, nope,
+    "`randomForestSRC`", "`rfsrc`",         yep,  kinda, nope
+  )
+
+pred_types %>% 
+  kable(escape = FALSE) %>% 
+  kableExtra::kable_styling()
+```
+

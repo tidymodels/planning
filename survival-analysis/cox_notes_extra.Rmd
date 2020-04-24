@@ -1,0 +1,80 @@
+---
+title: "Additional notes for Cox models"
+author: "Devin Incerti"
+---
+
+
+```{r, load_libs, message = FALSE, warning = FALSE, echo = FALSE, results = 'hide'}
+library(prodlim)
+library(survival)
+library(pec)
+library(knitr)
+library(tidymodels)
+opts_chunk$set(comment = NA, tidy = FALSE, digits = 3,
+               warning = TRUE, message = FALSE)
+options(width = 100, digits = 3)
+```
+
+# Data
+
+First, let's simulate some data:
+
+```{r, simulate}
+library(prodlim)
+set.seed(43500)
+train_dat <- SimSurv(200)
+set.seed(2721)
+test_dat <- SimSurv(2)
+test_pred <- test_dat[, 5:6]
+.times <- c(1, 5, 10)
+```
+
+# Cox PH models with left truncation or interval censoring
+Left truncated survival data is fairly common in practice. `survival::coxph()` can fit such models and survival functions can be predicted using `survival::survfit.coxph()` or with `pec::predictSurvProb()`; however, in the latter case, a warning is returned.
+
+```{r, cox_fit_lt}
+library(survival)
+library(pec)
+cph_mod_lt <- coxph(Surv(time/2, time, status) ~ (X1 + X2)^2, data = train_dat,
+                    x = TRUE)
+
+# Survival predictions
+summary(survfit(cph_mod_lt, newdata = test_pred), times = .times) 
+predictSurvProb(cph_mod_lt, newdata = test_pred, times = .times)
+```
+
+`survival::coxph()` does not support interval censoring:
+
+```{r, cox_interval, error = TRUE}
+coxph(Surv(time/2, time, type = "interval2") ~ (X1 + X2)^2, data = train_dat)
+
+```
+
+# General "hack" for predicting survival from Cox models
+Survival predictions can be made from a Cox model by running `survival::coxph()` with fixed parameters and then calling `survival::survfit.coxph()`. We illustrate using `mboost::glmboost()`:
+
+
+```{r glm-boost-fit}
+library(mboost)
+f <- Surv(time, status) ~ X1 + X2
+glmb_mod <- glmboost(f,data = train_dat, family = CoxPH())
+```
+
+`mboost` provides a `survFit()` function for predicting survival functions, but there is no explicit time argument:
+
+```{r glm-boost-survFit}
+
+glmb_surv1 <- survFit(glmb_mod, test_pred) %>%
+  {.[c("time","surv")]} %>%
+  do.call("cbind", .) %>%
+  as_tibble()
+glmb_surv1
+```
+
+We can get around this with the `survival::survfit()` "hack":
+```{r, r survfit-hack}
+coxfit <- survival::coxph(f, data = train_dat,
+                          init = coef(glmb_mod)[-1],
+                          control = survival::coxph.control(iter.max = 0))
+summary(survfit(coxfit, newdata = test_pred), times = glmb_surv1$time[1:3]) 
+```
