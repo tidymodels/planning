@@ -1,9 +1,12 @@
-
+---
+always_allow_html: true
+---
 
 ```{r, load_libs, message = FALSE, warning = FALSE, echo = FALSE, results = 'hide'}
 library(prodlim)
 library(survival)
 library(flexsurv)
+library(casebase)
 library(rpart)
 library(pec)
 library(ipred)
@@ -194,6 +197,42 @@ summary(flxs_mod, test_pred, type = "survival", t = .times, tidy = TRUE)
 
 The `flexsurvspline()` function has the same interface. 
 
+## `casebase::`[`fitSmoothHazard`](https://rdrr.io/cran/casebase/man/fitSmoothHazard.html)
+
+The main fitting function is `fitSmoothHazard`:
+
+```{r, cb_fit}
+library(casebase)
+cb_mod <-
+  fitSmoothHazard(status ~ time + (X1 + X2) ^ 2,
+                  data = train_dat)
+```
+
+Note that `time` is modeled explicitly and with flexibility:
+
+```{r, cb_splines}
+library(splines)
+cb_sp_mod <-
+  fitSmoothHazard(status ~ bs(time) + (X1 + X2) ^ 2,
+                  data = train_dat)
+```
+
+And we can also do penalized estimation:
+
+```{r, cb_glment}
+cb_glmnet_mod <-
+  fitSmoothHazard(status ~ time + (X1 + X2) ^ 2,
+                  data = train_dat, family = "glmnet")
+```
+
+Predictions for the cumulative incidence or survival probabilities are obtained using `absoluteRisk`: 
+
+```{r, cb_pred}
+absoluteRisk(cb_mod, newdata = test_pred, time = .times, type = "CI")
+absoluteRisk(cb_mod, newdata = test_pred, time = .times, type = "survival")
+```
+
+(Note that the argument `type` is only available in the development version.)
 
 ## Cox PH Models
 
@@ -402,6 +441,7 @@ pred_types <-
     ~Package, ~Function, ~`pred event time`, ~`survival probs`, ~`linear pred`,
     "`survival`",        "`survreg`",        yep,  nope,  yep,
     "`flexsurv`",        "`flexsurvreg`",    yep,   yep,  yep,
+    "`casebase`",        "`fitSmoothHazard`",    nope,   yep,  yep,
     "`survival`",        "`coxph`",         yep, yep,  yep,
     "`glmnet`",          "`glmnet`",        kinda, kinda,  yep,
     "`mboost`",          "`*boost`",        kinda, kinda,  yep,
