@@ -439,7 +439,7 @@ pred_types <-
     "`party`",           "`ctree`",         yep,  kinda, nope,
     "`party`",           "`cforest`",       yep,  kinda, nope,
     "`randomForestSRC`", "`rfsrc`",         yep,  kinda, nope,
-    "`ranger`",          "`ranger`",        yep,  kinda, nope
+    "`ranger`",          "`ranger`",        kinda,  yep, nope
   )
 
 pred_types %>% 

@@ -810,8 +810,8 @@ In most cases, the open circle means that this type of prediction is facilitated
   <tr>
    <td style="text-align:left;"> `ranger` </td>
    <td style="text-align:left;"> `ranger` </td>
-   <td style="text-align:left;"> ✓ </td>
    <td style="text-align:left;"> ◯ </td>
+   <td style="text-align:left;"> ✓ </td>
    <td style="text-align:left;"> x </td>
   </tr>
 </tbody>
