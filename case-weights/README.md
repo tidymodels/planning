@@ -40,7 +40,7 @@ Change level:  🔥🔥🔥🔥
 
 The user can change a role to be `"case_weight"` and we can document this as the canonical role. Again, we might want different roles for the two different types of weights described at the top. 
 
-**Each step function** will require modifications _if_ their calculations can use case weights (some implementations in package dependencies may not accept them).
+**Each step function** will require modifications _if_ their calculations can use case weights (some implementations in package dependencies may not accept them). For example, `prcomp()` does not accept case weights so `step_pca()` would not either. 
 
 ## `workflows`/`hardhat`
 
