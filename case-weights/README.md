@@ -14,7 +14,7 @@ We tend to think of case weights only in terms of the model but, depending on wh
 
 * Preprocessing (both cases): Arguably, the weights should matter here too. PCA, centering, and scaling are three basic example where the preprocessing should respect these weights but their underlying functions (`prcomp()`, `mean()`, `sd()`) have no capacity for case weights. 
 
-* Performance determination (case 1 only): If a row is a placeholder for _X_ number of data points, it should have a higher weight in the metric calculations. Otherwise it is under-valued in the statistics. 
+* Performance determination (both cases): If a row is a placeholder for _X_ number of data points, it should have a higher weight in the metric calculations. Otherwise it is under-valued in the statistics. 
 
 ## `parsnip` 
 
