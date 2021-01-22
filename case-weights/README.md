@@ -6,6 +6,8 @@ I see two different use cases for case weights:
 
 1. Case weights signify how much importance each value should have. You might weight certain important data points higher for some reason. For example, in my last job, we would sometimes weight compounds inversely with their age (older data is less relevant). Fractional values make sense here. 
 
+Possible lables for these two situations would be `pattern_count` for the first and `case_weight` for the second. 
+
 We tend to think of case weights only in terms of the model but, depending on which of these use cases you are in, it could/should impact other computations, such as: 
 
 * Data Splitting (case 1 only): should all of the replicate configurations be in the training or test set? Should bootstrapping or other resampling methods account for the case weights? 
@@ -58,7 +60,7 @@ Under the hood, all of the metrics would need to accommodate case weights. In mo
 
 Change level:  🔥🔥
 
-The changes to `rsample` are a little ambiguous. For the two classes of case weight scenarios listed above, we would probably do different things. 
+The changes to `rsample` are a little ambiguous. For the two classes of case weight scenarios listed above, we would probably do different things. _This is probably the only situation where the two scenarios matter._ 
 
 When case weights reflect the number of rows with that pattern, it is unclear how `rsample` should handle this. We could keep the rows together so that they all either go into the training or test set _or_ split them up. I can envision problems with biasing the performance metrics either way. 
 
