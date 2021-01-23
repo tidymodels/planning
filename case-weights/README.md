@@ -116,7 +116,7 @@ Change level:  🔥🔥
 
 * `step_factor2string()`: No changes
 
-* `step_feature_hash()`: No changes
+* `step_feature_hash()`: No changes 
 
 * `step_filter()`: No changes
 
@@ -261,4 +261,127 @@ Change level:  🔥🔥
 * `step_zv()`: No changes
 
  
+## `parsnip` models
+
+
+
+Accepts case weights: 
+
+ * `baguette::bag_mars` (earth)
+
+ * `baguette::bag_tree` (C5.0)
+
+ * `baguette::bag_tree` (rpart)
+
+ * `parsnip::boost_tree` (C5.0)
+
+ * `parsnip::boost_tree` (xgboost)
+
+ * `rules::C5_rules` (C5.0)
+
+ * `rules::cubist_rules` (Cubist)
+
+ * `parsnip::decision_tree` (C5.0)
+
+ * `parsnip::decision_tree` (rpart) 
+
+ * `discrim::discrim_flexible` (earth)
+
+ * `parsnip::linear_reg` (glmnet)
+
+ * `parsnip::linear_reg` (lm)
+
+ * `parsnip::linear_reg` (stan)
+
+ * `parsnip::logistic_reg` (glm)
+
+ * `parsnip::logistic_reg` (glmnet)
+
+ * `parsnip::logistic_reg` (stan)
+
+ * `parsnip::mars` (earth)
+
+ * `parsnip::multinom_reg` (glmnet)
+
+ * `parsnip::multinom_reg` (nnet)
+
+ * `parsnip::mlp` (nnet)
+
+ * `plsmod::pls` (mixOmics)
+
+ * `poissonreg::poisson_reg` (glm)
+
+ * `poissonreg::poisson_reg` (glmnet)
+
+ * `poissonreg::poisson_reg` (hurdle)
+
+ * `poissonreg::poisson_reg` (zeroinfl)
+
+ * `poissonreg::poisson_reg` (stan)
+
+ * `parsnip::rand_forest` (ranger)
+
+ * `parsnip::surv_reg` (flexsurv)
+
+ * `parsnip::surv_reg` (survival)
+
+
+Does not allow case weights
+
+* `modeltime::arima_boost` (arima_xgboost)
+
+ * `modeltime::arima_boost` (auto_arima_xgboost)
+
+ * `modeltime::arima_reg` (arima)
+
+ * `modeltime::arima_reg` (auto_arima)
+
+ * `discrim::discrim_linear` (MASS)
+
+ * `discrim::discrim_linear` (mda)
+
+ * `discrim::discrim_regularized` (klaR)
+
+ * `modeltime::exp_smoothing` (ets)
+ 
+ * `discrim::naive_Bayes` (klaR)
+
+ * `discrim::naive_Bayes` (naivebayes)
+
+ * `parsnip::nearest_neighbor` (kknn)
+
+ * `parsnip::linear_reg` (keras)
+
+ * `parsnip::logistic_reg` (keras)
+
+ * `parsnip::mlp` (keras)
+
+ * `parsnip::multinom_reg` (keras)
+
+ * `modeltime::nnetar_reg` (nnetar)
+ 
+ * `modeltime::prophet_boost` (prophet_xgboost)
+
+ * `modeltime::prophet_reg` (prophet)
+
+ * `parsnip::rand_forest` (randomForest)
+
+ * `rules::rule_fit` (xrf)
+
+ * `modeltime::seasonal_reg` (stlm_arima)
+
+ * `modeltime::seasonal_reg` (stlm_ets)
+
+ * `modeltime::seasonal_reg` (tbats)
+
+ * `parsnip::svm_poly` (kernlab)
+
+ * `parsnip::svm_rbf` (kernlab)
+
+ * `parsnip::svm_rbf` (liquidSVM)
+
+
+
+
+
 
