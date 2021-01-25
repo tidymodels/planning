@@ -70,200 +70,209 @@ Change level:  🔥🔥
 
 `tune` will mostly change in how it handles the new roles and passing the data around. It's internal APIs will be affected by the changes listed above but the user-facing APIs are most likely unaffected.  
 
-
-
 ## List of specific changes
 
 ### Recipe steps
 
-* `step_adasyn()`: Underlying implementation prevents changes
+** No changes
 
-* `step_arrange()`: No changes
+* `step_arrange()`
 
-* `step_bin2factor()`: No changes
+* `step_bin2factor()`
 
-* `step_BoxCox()`: Changes required
+* `step_bs()`
 
-* `step_bs()`: No changes
+* `step_count()`
 
-* `step_bsmote()`: Underlying implementation prevents changes
+* `step_cut()`
 
-* `step_center()`: Straightforward changes
+* `step_date()`
 
-* `step_classdist()`: Straightforward changes
+* `step_dummy()`
 
-* `step_corr()`: Changes required. We can use `cov.wt()` instead of `cor()` (with fewer options) then convert to a correlation matrix via `solve(sqrt(diag(cov))) * cov * solve(sqrt(diag(cov)))`
+* `step_factor2string()`
 
-* `step_count()`: No changes
+* `step_feature_hash()` 
 
-* `step_cut()`: No changes
+* `step_filter()`
 
-* `step_date()`: No changes
+* `step_geodist()`
 
-* `step_depth()`: Underlying implementation prevents changes
+* `step_holiday()`
 
-* `step_discretize()`: Changes required
+* `step_hyperbolic()`
 
-* `step_discretize_cart()`: Changes required
+* `step_impute_lower()`
 
-* `step_discretize_xgb()`: Changes required
+* `step_integer()`
 
-* `step_downsample()`: Changes required
+* `step_interact()`
 
-* `step_dummy()`: No changes
+* `step_intercept()`
 
-* `step_embed()`: Underlying implementation prevents changes
+* `step_inverse()`
 
-* `step_factor2string()`: No changes
+* `step_invlogit()`
 
-* `step_feature_hash()`: No changes 
+* `step_lag()`
 
-* `step_filter()`: No changes
+* `step_lincomb()`
 
-* `step_geodist()`: No changes
+* `step_log()`
 
-* `step_holiday()`: No changes
+* `step_logit()`
 
-* `step_hyperbolic()`: No changes
+* `step_mutate()`
 
-* `step_ica()`: Underlying implementation prevents changes
+* `step_mutate_at()`
 
-* `step_impute_bag()`: Changes required
+* `step_naomit()`
 
-* `step_impute_knn()`: Underlying implementation prevents changes
+* `step_novel()`
 
-* `step_impute_linear()`: Changes required
+* `step_ns()`
 
-* `step_impute_lower()`: No changes
+* `step_num2factor()`
 
-* `step_impute_mean()`: Straightforward changes
+* `step_nzv()`
 
-* `step_impute_median()`: Straightforward changes
+* `step_ordinalscore()`
 
-* `step_impute_mode()`: Straightforward changes
+* `step_poly()`
+
+* `step_profile()`
+
+* `step_ratio()`
+
+* `step_regex()`
+
+* `step_relevel()`
+
+* `step_relu()`
+
+* `step_rename()`
+
+* `step_rename_at()`
+
+* `step_rm()`
+
+* `step_shuffle()`
+
+* `step_slice()`
+
+* `step_sqrt()`
+
+* `step_string2factor()`
+
+* `step_unknown()`
+
+* `step_unorder()`
+
+* `step_zv()`
+
+** Underlying implementation prevents changes
+
+* `step_adasyn()`
+
+* `step_bsmote()`
+
+* `step_depth()`
+
+* `step_embed()`
+
+* `step_ica()`
+
+* `step_impute_knn()`
+
+* `step_isomap()`
+
+* `step_kpca()`
+
+* `step_kpca_poly()`
+
+* `step_kpca_rbf()`
+
+* `step_nearmiss()`
+
+* `step_nnmf()`
+
+* `step_pca()`
+
+* `step_pls()`
+
+* `step_rose()`
+
+* `step_smote()`
+
+* `step_tomek()`
+
+* `step_umap()`
+
+* `step_woe()`
+
+
+** Straightforward changes
+
+This means including an extra argument to the underlying call or similar api changes
+
+* `step_center()`
+
+* `step_classdist()`
+
+* `step_corr()`. We can use `cov.wt()` instead of `cor()` (with fewer options) then convert to a correlation matrix via `solve(sqrt(diag(cov))) * cov * solve(sqrt(diag(cov)))`
+
+* `step_discretize_cart()`
+
+* `step_discretize_xgb()`
+
+* `step_impute_bag()`
+
+* `step_impute_linear()`
+
+* `step_impute_mean()`
+
+* `step_lencode_bayes()`
+
+* `step_lencode_glm()`
+
+* `step_lencode_mixed()`
+
+* `step_normalize()`
+
+* `step_scale()`
+
+** Significant changes
+
+This means defining new calculations or expanding the individual vectors using their weights. 
+
+* `step_BoxCox()`
+
+* `step_discretize()`
+
+* `step_downsample()`
+
+* `step_impute_median()`
+
+* `step_impute_mode()`
 
 * `step_impute_roll()`:
 
-* `step_integer()`: No changes
+* `step_other()`
 
-* `step_interact()`: No changes
+* `step_range()`
 
-* `step_intercept()`: No changes
+* `step_sample()`
 
-* `step_inverse()`: No changes
+* `step_spatialsign()`
 
-* `step_invlogit()`: No changes
-
-* `step_isomap()`: Underlying implementation prevents change
-
-* `step_kpca()`: Underlying implementation prevents changes
-
-* `step_kpca_poly()`: Underlying implementation prevents changes
-
-* `step_kpca_rbf()`: Underlying implementation prevents changes
-
-* `step_lag()`: No changes
-
-* `step_lencode_bayes()`: Straightforward changes
-
-* `step_lencode_glm()`: Straightforward changes
-
-* `step_lencode_mixed()`: Straightforward changes
-
-* `step_lincomb()`: No changes
-
-* `step_log()`: No changes
-
-* `step_logit()`: No changes
-
-* `step_mutate()`: No changes
-
-* `step_mutate_at()`: No changes
-
-* `step_naomit()`: No changes
-
-* `step_nearmiss()`: Underlying implementation prevents changes
-
-* `step_nnmf()`: Underlying implementation prevents changes
-
-* `step_normalize()`: Straightforward changes
-
-* `step_novel()`: No changes
-
-* `step_ns()`: No changes
-
-* `step_num2factor()`: No changes
-
-* `step_nzv()`: No changes
-
-* `step_ordinalscore()`: No changes
-
-* `step_other()`: Straightforward changes
-
-* `step_pca()`: Underlying implementation prevents changes
-
-* `step_pls()`: Underlying implementation prevents changes
-
-* `step_poly()`: No changes
-
-* `step_profile()`: No changes
-
-* `step_range()`: Straightforward changes
-
-* `step_ratio()`: No changes
-
-* `step_regex()`: No changes
-
-* `step_relevel()`: No changes
-
-* `step_relu()`: No changes
-
-* `step_rename()`: No changes
-
-* `step_rename_at()`: No changes
-
-* `step_rm()`: No changes
-
-* `step_rose()`: Underlying implementation prevents changes
-
-* `step_sample()`: Changes required
-
-* `step_scale()`: Straightforward changes
-
-* `step_shuffle()`: No changes
-
-* `step_slice()`: No changes
-
-* `step_smote()`: Underlying implementation prevents changes
-
-* `step_spatialsign()`: Straightforward changes
-
-* `step_sqrt()`: No changes
-
-* `step_string2factor()`: No changes
-
-* `step_tomek()`: Underlying implementation prevents changes
-
-* `step_umap()`: Underlying implementation prevents changes
-
-* `step_unknown()`: No changes
-
-* `step_unorder()`: No changes
-
-* `step_upsample()`: Changes required
+* `step_upsample()`
 
 * `step_window()`:
 
-* `step_woe()`: Underlying implementation prevents changes
-
-* `step_YeoJohnson()`: Changes required
-
-* `step_zv()`: No changes
+* `step_YeoJohnson()`
 
  
 ## `parsnip` models
-
-
 
 Accepts case weights: 
 
