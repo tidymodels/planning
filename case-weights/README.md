@@ -74,7 +74,7 @@ Change level:  🔥🔥
 
 ### Recipe steps
 
-** No changes **
+**No changes**
 
 * `step_arrange()`
 
@@ -170,7 +170,7 @@ Change level:  🔥🔥
 
 * `step_zv()`
 
-** Underlying implementation prevents changes **
+**Underlying implementation prevents changes**
 
 * `step_adasyn()`
 
@@ -211,7 +211,7 @@ Change level:  🔥🔥
 * `step_woe()`
 
 
-** Straightforward changes **
+**Straightforward changes**
 
 This means including an extra argument to the underlying call or similar api changes
 
@@ -241,7 +241,7 @@ This means including an extra argument to the underlying call or similar api cha
 
 * `step_scale()`
 
-** Significant changes **
+**Significant changes**
 
 This means defining new calculations or expanding the individual vectors using their weights. 
 
@@ -271,10 +271,10 @@ This means defining new calculations or expanding the individual vectors using t
 
 * `step_YeoJohnson()`
 
- 
+
 ## `parsnip` models
 
-Accepts case weights: 
+**Accepts case weights** 
 
  * `baguette::bag_mars` (earth)
 
@@ -335,7 +335,7 @@ Accepts case weights:
  * `parsnip::surv_reg` (survival)
 
 
-Does not allow case weights
+**Does not allow case weights**
 
 * `modeltime::arima_boost` (arima_xgboost)
 
@@ -352,7 +352,7 @@ Does not allow case weights
  * `discrim::discrim_regularized` (klaR)
 
  * `modeltime::exp_smoothing` (ets)
- 
+
  * `discrim::naive_Bayes` (klaR)
 
  * `discrim::naive_Bayes` (naivebayes)
@@ -368,7 +368,7 @@ Does not allow case weights
  * `parsnip::multinom_reg` (keras)
 
  * `modeltime::nnetar_reg` (nnetar)
- 
+
  * `modeltime::prophet_boost` (prophet_xgboost)
 
  * `modeltime::prophet_reg` (prophet)
