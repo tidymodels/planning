@@ -74,7 +74,7 @@ Change level:  🔥🔥
 
 ### Recipe steps
 
-** No changes
+** No changes **
 
 * `step_arrange()`
 
@@ -170,7 +170,7 @@ Change level:  🔥🔥
 
 * `step_zv()`
 
-** Underlying implementation prevents changes
+** Underlying implementation prevents changes **
 
 * `step_adasyn()`
 
@@ -211,7 +211,7 @@ Change level:  🔥🔥
 * `step_woe()`
 
 
-** Straightforward changes
+** Straightforward changes **
 
 This means including an extra argument to the underlying call or similar api changes
 
@@ -241,7 +241,7 @@ This means including an extra argument to the underlying call or similar api cha
 
 * `step_scale()`
 
-** Significant changes
+** Significant changes **
 
 This means defining new calculations or expanding the individual vectors using their weights. 
 
