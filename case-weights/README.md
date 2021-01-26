@@ -1,20 +1,24 @@
 These are notes about how we will be incorporating case weights in to the tidymodels packages. 
 
-I see two different use cases for case weights: 
+I see different use cases for case weights (terminology from "Weight and See" by Unwin, Hofmann, and Wickham, unpublished): 
 
-1. Case weights are `n` for replicated covariate patterns. So a weight of 20 means that there were 20 rows with this same data pattern and we want to save memory by eliminating 19 redundant rows. 
+* _Frequency weighting_ corresponds to cases where a specific pattern of data, usually covariates, are observed multiple times. Instead of the data containing the same row many times, it can contain a single row with a weight column that indicates how many times this was observed. 
 
-1. Case weights signify how much importance each value should have. You might weight certain important data points higher for some reason. For example, in my last job, we would sometimes weight compounds inversely with their age (older data is less relevant). Fractional values make sense here. 
+* _Probability weighting_ occurs when the row of data reflects a non-random sampling scheme. This might occur in surveys where the observed results might be weighted by the proportion of specific parts of the population. 
 
-Possible lables for these two situations would be `pattern_count` for the first and `case_weight` for the second. 
+* _Importance weighting_ is when the weights correspond to how much influence each row should have on the model or statistical calculations. Boosting methods use this type of weighting to create ensembles. 
+
+* _Analytic weighting_ might use statistics to adjust the data for type of meta-analysis. For example, if there is some type of variance measure for each row, one might weight by the inverse of the variance. 
 
 We tend to think of case weights only in terms of the model but, depending on which of these use cases you are in, it could/should impact other computations, such as: 
 
-* Data Splitting (case 1 only): should all of the replicate configurations be in the training or test set? Should bootstrapping or other resampling methods account for the case weights? 
+* Data Splitting (frequency weighting only): should all of the replicate configurations be in the training or test set? Should bootstrapping or other resampling methods account for the case weights? My first thought is that the resampling should use these weights and operate as if all of the rows were in the data set. 
 
-* Preprocessing (both cases): Arguably, the weights should matter here too. PCA, centering, and scaling are three basic example where the preprocessing should respect these weights but their underlying functions (`prcomp()`, `mean()`, `sd()`) have no capacity for case weights. 
+* Preprocessing (all cases): Arguably, the weights should matter here too. PCA, centering, and scaling are three basic example where the preprocessing should respect these weights but their underlying functions (`prcomp()`, `mean()`, `sd()`) have no capacity for case weights. 
 
-* Performance determination (both cases): If a row is a placeholder for _X_ number of data points, it should have a higher weight in the metric calculations. Otherwise it is under-valued in the statistics. 
+* Performance determination (all cases): If a row is a placeholder for _X_ number of data points, it should have a higher weight in the metric calculations. Otherwise it is under-valued in the statistics. 
+
+Specific areas of change are listed below.
 
 ## `parsnip` 
 
@@ -60,7 +64,7 @@ Under the hood, all of the metrics would need to accommodate case weights. In mo
 
 Change level:  🔥🔥
 
-The changes to `rsample` are a little ambiguous. For the two classes of case weight scenarios listed above, we would probably do different things. _This is probably the only situation where the two scenarios matter._ 
+The changes to `rsample` are a little ambiguous. For frequency weighting, we would probably do different things. _This is probably the only situation where the four scenarios above matter._ 
 
 When case weights reflect the number of rows with that pattern, it is unclear how `rsample` should handle this. We could keep the rows together so that they all either go into the training or test set _or_ split them up. I can envision problems with biasing the performance metrics either way. 
 
