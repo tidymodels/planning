@@ -1,0 +1,157 @@
+
+```{r}
+library(tidyverse)
+library(tidymodels)
+```
+
+# Overview
+
+`tidymodels` currently only implements supervised learning methods.  This
+document explores the possibility of including unsupervised methods in the same
+framework.
+
+## Basic Definition
+
+I'll use the term "clustering" to refer generally to any method that does the
+following:
+
+1. Define a **measure of similarity** between objects.
+
+2. Discover **groups of objects** that are similar.
+
+Many of the thoughts in this section are taken from [this paper](http://proceedings.mlr.press/v27/luxburg12a/luxburg12a.pdf)
+
+## Uses of Clustering
+
+1. **Semi-Supervised Learning:** If we have class labels on *some* of the objects, 
+we can apply unsupervised clustering, then let the clusters be defined by their
+class enrichment of labelled objects.
+
+    +  A word of caution for this approach:  Just because a clustering structure
+    doesn't align with known labels doesn't mean it is "wrong".  It could be 
+    capturing a different (true) aspect of the data than the one we have labels for.
+
+2. **EDA:** Sometimes clustering is applied as a first exploratory step, to get
+a sense of the structure of the data.  This is somewhat nebulous, and usually
+involves eyeballing a visualization.
+
+    +  In my experience this is usually a precursor to classification.  We'd do
+    an unsupervised clustering and see how well the objects "group up".  This 
+    gives us an idea of whether the measurements we're using for classification
+    are a good choice, before we fit a formal model.
+
+3. **Pre-processing:** Clustering can be used to discover relationships in data
+that are undesirable, so that we can *residualize* or *decorrelate* the objects
+before applying an analysis.
+
+    + A great example of this is in genetics, where we have measurements of gene
+    expression for several subjects.  Typically, gene expression is most
+    strongly correlated by race.  If we cluster the subjects on gene expression,
+    we can then identify unwanted dependence to remove from the data.
+    
+4. **Clusters as analysis:** Sometimes, assignment of cluster membership *is* the
+end goal of the study. For example:
+
+    +  In the Enron corruption case in 2001, researchers created a network based
+    on who emailed who within the company.  They then looked at which clusters
+    contained known consiprators, and investigated the other individuals in those
+    groups.
+    
+    +  In the early days of breast cancer genetic studies, researchers clustered
+    known patients on genetic expression, which led to the discovery of different
+    tumor types (e.g. Basal, Her-2, Luminal).  These have later been clinically
+    validated and better defined.
+
+
+## Ways to validate a cluster
+
+The major departure from supervised learning is this:  With a supervised method,
+we have a very clear way to measure success, namely, how well does it predict?
+
+With clustering, there is no "right answer" to compare results againsts.
+
+There are several ways people typically validate a clustering result:
+
+1. **within-group versus without-group similarity:**  The goal is to find
+groups of similar objects.  Thus, we can check how close objects in the same 
+cluster are as compared to how close objects in different clusters are.
+
+     +  A problem with this is that there's not objective baseline about what is
+     a "good" ratio. 
+     +  (Gao, Witten, Bien have a cool new paper suggesting a statistical test
+     for cluster concentration.)
+     
+     
+2.  **Stability:**  If we regard the objects being clustered as a random subset
+of a population, we can ask whether the same cluster structure would have emerged
+in a different random subset.  We can measure this with bootstrapped subsampling.
+
+    +  A cluster structure being stable doesn't necessarily mean it is meaningful.
+    See e.g. [this tweet](https://twitter.com/AndrewZalesky/status/1363741266761027585)
+    
+    
+3.  **Enrichment in known labels:** (See *semi-supervised learning* above)
+
+4.  **Statistical significance/generative models:** If our clustering method 
+places model assumptions on how the data was generated, we can formulate a notion
+of statistically signficant clusters.  
+
+    +  A good example of this is "model-based clustering", which typically assumes
+    the data is generated from a mixture of multivariate Gaussians.  We can then
+    estimate the probability that a particular object came from a particular 
+    distribution in the mixture.
+    
+    
+## Other details
+
+#### Partitions versus Extractions
+
+In many clustering algorithms, each object is placed into **exactly one** cluster.
+This is called a **partition**.
+
+However, some algorithms allow for overlapping clusters, i.e. objects belonging to 
+multiple clusters - or for some objects to be "background" and have no cluster 
+membership at all.
+
+(This is sometimes called **community detection** or **cluster extraction**)
+
+#### What are the variables, what are the samples?
+
+Consider the example of data consisting of many gene expression measurements
+for several individual subjects.
+
+From a statistical perspective, we'd typically regard the subjects as samples
+from a population, and the gene expression levels as variables being studied.
+
+When we cluster this data, sometimes we look for clusters of **subjects**, i.e.,
+people whose gene signature is similar.  Sometimes we look for clusters of **genes**,
+i.e., genes that activate or deactivate together.
+
+Non-statistical algorithms (e.g. kmeans) are agnostic to what set of objects we 
+cluster on.  In statistical algorithms, your model assumptions need to match
+your notion of samples/variables.
+
+#### Beyond the distance matrix
+
+In the vast majority of cases, all you need for a clustering algorithm is a 
+**similarity matrix*; that is, entry $(i,j)$ of the matrix is the pairwise similarity 
+measure between object $i$ and object $j$.
+
+Of course, the choice of similarity measure matters enormously.  But the point is
+you only need pairwise similarities to run e.g. kmeans.
+
+Some approaches, though, need more information.  Statistical approaches in particular
+often estimate nuisance variables (like variance) from multiple measurements before
+collapsing the data into pairwise similarities.
+
+
+# Inclusion in tidymodels
+
+
+
+# Existing framework
+
+
+
+# New framework needed
+
