@@ -154,7 +154,8 @@ different preprocessing options/structure.
 Obviously, any and all clustering methods would have to be implemented as model
 spec functions, and the setup would look similar, e.g.
 
-```{r, eval = FALSE}
+
+```r
 km_mod <- k_means(centers = 5) %>%
     set_mode("partition") %>%
     set_engine("stats")
@@ -187,11 +188,11 @@ into four "modes" options.
 Every model comes with choices about parameters and assumptions and such.  To
 some degree, this would work the same in `parsnip` and `celery`:
 
-```{r, eval = FALSE}
+
+```r
 knn_mod <- nearest_neighbors(neighbors = 5)
 
 km_mod <- k_means(centers = 5)
-
 ```
 
 However, for clustering, the decision of how to define "dissimilarity" feels like
@@ -208,7 +209,8 @@ c. force the user to choose very deliberately rather than relying on defaults
 
 For example,
 
-```{r, eval = FALSE}
+
+```r
 k_means(centers = 5) %>%
     set_dist("euclidean")
 
@@ -228,8 +230,8 @@ have **so** many possible dissimilarity measures.
 There is no real reason the `fit` step needs to look different, once a model
 is specified:
 
-```{r, eval = FALSE}
 
+```r
 km_mod <- k_means(centers = 5) %>%
     set_dist("euclidean") %>%
     set_mode("partition") %>%
@@ -287,7 +289,8 @@ the v-fold cross-validation process into a single function, it could condense
 subsampling into a single function.  Also, I haven't said much about tuning, but
 it'd be great to be able to do something like:
 
-```{r, eval = FALSE}
+
+```r
 k_means(clusters = tune())
 ```
 
