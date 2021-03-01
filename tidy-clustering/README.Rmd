@@ -1,6 +1,6 @@
 # Overview
 
-`tidymodels` currently only implements supervised learning methods.  This
+`tidymodels` currently focuses on supervised learning methods, with unsupervised methods in [recipes](https://recipes.tidymodels.org/) and related-packages like [embed](https://embed.tidymodels.org/) mainly framed as preprocessing steps for supervised learning.  This
 document explores the possibility of including unsupervised methods in the same
 framework.
 
@@ -290,7 +290,6 @@ it'd be great to be able to do something like:
 ```{r, eval = FALSE}
 k_means(clusters = tune())
 ```
-
 
 
 
