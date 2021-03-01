@@ -151,7 +151,7 @@ different preprocessing options/structure.
 
 ## `parsnip`-like models
 
-Obviously, any and all clustering methods would have to be implemented as model
+Any and all clustering methods could be implemented as model
 spec functions, and the setup would look similar, e.g.
 
 ```{r, eval = FALSE}
