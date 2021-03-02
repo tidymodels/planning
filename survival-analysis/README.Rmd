@@ -11,7 +11,6 @@ library(rpart)
 library(pec)
 library(ipred)
 library(randomForestSRC)
-library(ranger)
 library(mboost)
 library(tidymodels)
 library(cli)
@@ -108,6 +107,7 @@ fitw <-
               dist = "weibull")
 times <- 
   summary(fitw, ovarian[1:2,], type = "mean") %>% 
+  map(~ setNames(.x, c("est", "lcl", "ucl"))) %>% 
   bind_rows() %>% 
   select(.pred_time = est) %>% 
   as_tibble()
@@ -428,34 +428,6 @@ although these values do not bracket the observed times:
 summary(train_dat$time)
 ```
 
-### `ranger:::`[`ranger`](https://rdrr.io/cran/ranger/man/ranger.html)
-
-```{r, ranger_fit}
-library(ranger)
-ranger_mod <- ranger(Surv(time, status) ~ X1 + X2, data = train_dat, num.trees = 1000)
-```
-
-The `predict` function generates an object with class `"ranger.prediction"`. 
-
-```{r, ranger_pred}
-ranger_pred = predict(ranger_mod, test_pred)
-str(ranger_pred)
-```
-
-The `unique.death.times` slot has the unique death times:
-
-```{r, }
-all(sort(unique(train_dat$time)) == ranger_pred$unique.death.times)
-```
-
-The `survival` slot contains a matrix of predicted survival curves, with a row for each test case and a column for each death time. The `chf` slot is the same for the cumulative hazard function:
-
-```{r, ranger_surv}
-ranger_pred$survival[, 1:5]
-ranger_pred$chf[, 1:5]
-```
-
-
 # Model Prediction Scorecard
 
 In most cases, the open circle means that this type of prediction is facilitated _indirectly_. For example, using "tricks" related to `survfit()`, methods in the `pec` package, or other means. 
@@ -478,8 +450,7 @@ pred_types <-
     "`ipred`",           "`bagging`",        yep, kinda, nope,
     "`party`",           "`ctree`",         yep,  kinda, nope,
     "`party`",           "`cforest`",       yep,  kinda, nope,
-    "`randomForestSRC`", "`rfsrc`",         yep,  kinda, nope,
-    "`ranger`",          "`ranger`",        kinda,  yep, nope
+    "`randomForestSRC`", "`rfsrc`",         yep,  kinda, nope
   )
 
 pred_types %>% 
