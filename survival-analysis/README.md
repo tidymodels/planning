@@ -659,6 +659,69 @@ summary(train_dat$time)
    0.44    2.83    4.89    5.55    7.38   20.19 
 ```
 
+### `ranger:::`[`ranger`](https://rdrr.io/cran/ranger/man/ranger.html)
+
+
+```r
+library(ranger)
+ranger_mod <- ranger(Surv(time, status) ~ X1 + X2, data = train_dat, num.trees = 1000)
+```
+
+The `predict` function generates an object with class `"ranger.prediction"`. 
+
+
+```r
+ranger_pred = predict(ranger_mod, test_pred)
+str(ranger_pred)
+```
+
+```
+List of 7
+ $ num.trees                : num 1000
+ $ num.independent.variables: num 2
+ $ unique.death.times       : num [1:200] 0.435 0.537 0.549 0.603 0.635 ...
+ $ num.samples              : int 2
+ $ treetype                 : chr "Survival"
+ $ chf                      : num [1:2, 1:200] 0 0.172 0 0.172 0 ...
+ $ survival                 : num [1:2, 1:200] 1 0.842 1 0.842 1 ...
+ - attr(*, "class")= chr "ranger.prediction"
+```
+
+The `unique.death.times` slot has the unique death times:
+
+
+```r
+all(sort(unique(train_dat$time)) == ranger_pred$unique.death.times)
+```
+
+```
+[1] TRUE
+```
+
+The `survival` slot contains a matrix of predicted survival curves, with a row for each test case and a column for each death time. The `chf` slot is the same for the cumulative hazard function:
+
+
+```r
+ranger_pred$survival[, 1:5]
+```
+
+```
+      [,1]  [,2]  [,3]  [,4]  [,5]
+[1,] 1.000 1.000 1.000 1.000 1.000
+[2,] 0.842 0.842 0.842 0.842 0.842
+```
+
+```r
+ranger_pred$chf[, 1:5]
+```
+
+```
+      [,1]  [,2]  [,3]  [,4]  [,5]
+[1,] 0.000 0.000 0.000 0.000 0.000
+[2,] 0.172 0.172 0.172 0.172 0.172
+```
+
+
 # Model Prediction Scorecard
 
 In most cases, the open circle means that this type of prediction is facilitated _indirectly_. For example, using "tricks" related to `survfit()`, methods in the `pec` package, or other means. 
@@ -742,6 +805,13 @@ In most cases, the open circle means that this type of prediction is facilitated
    <td style="text-align:left;"> `rfsrc` </td>
    <td style="text-align:left;"> ✓ </td>
    <td style="text-align:left;"> ◯ </td>
+   <td style="text-align:left;"> x </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> `ranger` </td>
+   <td style="text-align:left;"> `ranger` </td>
+   <td style="text-align:left;"> ◯ </td>
+   <td style="text-align:left;"> ✓ </td>
    <td style="text-align:left;"> x </td>
   </tr>
 </tbody>
