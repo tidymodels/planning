@@ -1,7 +1,5 @@
 
 
-
-
 # Survival Methods in tidymodels
 
 There is significant interest in creating infrastructure for modeling censored data using the tidymodels packages. This document is a summary and discussion of what needs to be done and a survey of many of the modeling approaches existing in R. 
@@ -86,7 +84,6 @@ lung_tbl %>% slice(1:6)
 4     5   210      2    57     1       1       90        60     1150      11           210
 5     1   883      2    60     1       0      100        90       NA       0           883
 6    12  1022      1    74     1       1       50        80      513       0          1022
-# … with 1 more variable: [,"status"] <dbl>
 ```
 
 Typically, `Surv` objects are not added as columns but are used when the model formula is specified. For tidymodels, there may be some added complexity since special, model-specific formulas might be needed to use workflows. This is very similar to special formulas for generalized additive models and mixed models.  
@@ -128,10 +125,10 @@ pred_vals
 
 ```
 # A tibble: 2 x 2
-  .pred_time .pred           
-       <dbl> <list>          
-1       206. <tibble [3 × 2]>
-2       167. <tibble [3 × 2]>
+  .pred_time          .pred
+       <dbl> <list<tibble>>
+1       206.        [3 × 2]
+2       167.        [3 × 2]
 ```
 
 ```r
@@ -163,12 +160,9 @@ tidyr::unnest(pred_vals, cols = c(.pred))
 6       167.   500      0.0164 
 ```
 
-
-
+_References_: [_Evaluating Random Forests for Survival Analysis Using Prediction Error Curves._ (pdf)](https://www.jstatsoft.org/v50/i11/paper)
 
 # Possible models
-
-
 
 First, let's simulate some data:
 
@@ -229,7 +223,10 @@ predict(sr_mod, test_pred, type = 'quantile', p = c(.1, .5, .9))
 [2,] 1.01 2.65  4.89
 ```
 
-Note that the latter is in terms of the time units and are not probabilities of survival by a specified time. Since these are parametric models, probablity values can be derived indirectly. 
+Note that the latter is in terms of the time units and are not probabilities of survival by a specified time. Since these are parametric models, probability values can be derived indirectly. 
+
+_References_: [_A package for survival analysis in R_ (pdf)](https://cran.r-project.org/web/packages/survival/vignettes/survival.pdf)
+
 
 ### `flexsurv::`[`flexsurvreg`](https://rdrr.io/cran/flexsurv/man/flexsurvreg.html)
 
@@ -279,6 +276,70 @@ summary(flxs_mod, test_pred, type = "survival", t = .times, tidy = TRUE)
 
 The `flexsurvspline()` function has the same interface. 
 
+_References_: [_`flexsurv`: A Platform for Parametric Survival Modelling in R_](https://www.jstatsoft.org/article/view/v070i08)
+
+
+## `casebase::`[`fitSmoothHazard`](https://rdrr.io/cran/casebase/man/fitSmoothHazard.html)
+
+The main fitting function is `fitSmoothHazard`:
+
+
+```r
+library(casebase)
+cb_mod <-
+  fitSmoothHazard(status ~ time + (X1 + X2) ^ 2,
+                  data = train_dat)
+```
+
+Note that `time` is modeled explicitly and with flexibility:
+
+
+```r
+library(splines)
+cb_sp_mod <-
+  fitSmoothHazard(status ~ bs(time) + (X1 + X2) ^ 2,
+                  data = train_dat)
+```
+
+And we can also do penalized estimation:
+
+
+```r
+cb_glmnet_mod <-
+  fitSmoothHazard(status ~ time + (X1 + X2) ^ 2,
+                  data = train_dat, family = "glmnet")
+```
+
+Predictions for the cumulative incidence or survival probabilities are obtained using `absoluteRisk`: 
+
+
+```r
+absoluteRisk(cb_mod, newdata = test_pred, time = .times, type = "CI")
+```
+
+```
+ time             
+    0 0.0000 0.000
+    1 0.0352 0.218
+    5 0.2761 0.891
+   10 0.7797 1.000
+```
+
+```r
+absoluteRisk(cb_mod, newdata = test_pred, time = .times, type = "survival")
+```
+
+```
+ time               
+    0 1.000 1.00e+00
+    1 0.965 7.82e-01
+    5 0.724 1.09e-01
+   10 0.220 3.08e-05
+```
+
+(Note that the argument `type` is only available in the development version.)
+
+_References_: [_Fitting smooth-in-time prognostic risk functions via logistic regression_](https://scholar.google.com/scholar?hl=en&as_sdt=0%2C7&q=Fitting+smooth-in-time+prognostic+risk+functions+via+logistic+regression&btnG=), [_+A case-base sampling method for estimating recurrent event intensities_](https://scholar.google.com/scholar?hl=en&as_sdt=0%2C7&q=+A+case-base+sampling+method+for+estimating+recurrent+event+intensities&btnG=)
 
 ## Cox PH Models
 
@@ -319,7 +380,7 @@ Call: survfit(formula = cph_mod, newdata = test_pred)
    10     15      41     0.133  2.29e-06
 ```
 
-Survial probabilities can also be predicted using the `pec` package;
+Survival probabilities can also be predicted using the `pec` package;
 
 
 ```r
@@ -332,7 +393,9 @@ predictSurvProb(cph_mod, newdata = test_pred, times = .times)
 [2,] 0.846 0.118 2.29e-06
 ```
 
-See the document "cox_notes_extra" for more notes about this model. 
+See the document ["cox_notes_extra"](https://github.com/tidymodels/planning/blob/master/survival-analysis/cox_notes_extra.md) file for more notes about this model. 
+
+_References_: [_A package for survival analysis in R_ (pdf)](https://cran.r-project.org/web/packages/survival/vignettes/survival.pdf)
 
 
 ### `glmnet`
@@ -366,6 +429,8 @@ predict(glmn_fit, as.matrix(test_pred), type = "response")
 [2,] 10.09 10.23 10.36 10.5 10.6 10.70 10.79 10.88
 ```
 
+_References_: [_Regularization Paths for Cox’s Proportional Hazards Model via Coordinate Descent_](https://doi.org/10.18637/jss.v039.i05)
+
 ## `mboost` models
 
 The `mboost` package has a suite of functions for fitting boosted models whose base learners are either trees, GLM's, or GAM's. Each can take an argument of `family = CoxPH()` and each can make predictions on the linear predictor. 
@@ -387,6 +452,9 @@ predict(glmb_mod, test_pred)
 1 0.0399
 2 1.6059
 ```
+
+_References_: [_Survival ensembles_](https://scholar.google.com/scholar?hl=en&as_sdt=0%2C7&q=Survival+ensembles&btnG=)
+
 
 ## Tree-Based Models
 
@@ -424,6 +492,8 @@ predictSurvProb(pec_rpart_mod, newdata = test_pred, times = .times)
 [2,] 0.938 0.309     NA
 ```
 
+_References_: [_An introduction to recursive partitioning using the RPART routines_ (pdf)](https://www.mayo.edu/research/documents/rpartminipdf/doc-10027257)
+
 ### `ipred:::`[`bagging`](https://rdrr.io/cran/ipred/man/bagging.html)
 
 
@@ -445,13 +515,13 @@ bag_preds
 Call: survfit(formula = Surv(agglsample[[j]], aggcens[[j]]) ~ 1)
 
       n  events  median 0.95LCL 0.95UCL 
- 964.00  582.00    7.29    7.28    7.91 
+1112.00  679.00    7.58    7.29    7.91 
 
 [[2]]
 Call: survfit(formula = Surv(agglsample[[j]], aggcens[[j]]) ~ 1)
 
       n  events  median 0.95LCL 0.95UCL 
- 706.00  588.00    2.43    2.36    2.87 
+ 676.00  552.00    2.43    2.43    3.32 
 ```
 
 ```r
@@ -464,9 +534,9 @@ summary(bag_preds[[1]], times = .times)
 Call: survfit(formula = Surv(agglsample[[j]], aggcens[[j]]) ~ 1)
 
  time n.risk n.event survival std.err lower 95% CI upper 95% CI
-    1    938      26   0.9730 0.00522       0.9629       0.9833
-    5    480     204   0.7325 0.01538       0.7029       0.7632
-   10     14     341   0.0451 0.01133       0.0276       0.0738
+    1   1083      27   0.9757 0.00462       0.9667       0.9848
+    5    570     232   0.7369 0.01428       0.7094       0.7654
+   10     16     404   0.0515 0.01177       0.0329       0.0806
 ```
 
 ```r
@@ -476,8 +546,11 @@ map_dbl(bag_preds, ~ quantile(.x, probs = .5)$quantile)
 ```
 
 ```
-[1] 7.29 2.43
+[1] 7.58 2.43
 ```
+
+_References_: [_Bagging Survival Trees_](https://scholar.google.com/scholar?hl=en&as_sdt=0%2C7&q=Bagging+Survival+Trees&btnG=)
+
 
 ### `party:::`[`ctree`](https://rdrr.io/cran/party/man/ctree.html)
 
@@ -520,6 +593,9 @@ predictSurvProb(pec_ctree_mod, newdata = test_pred, times = .times)
 [1,] 0.964 0.739 0.0612
 [2,] 0.947 0.302 0.3022
 ```
+
+_References_: [_Unbiased Recursive Partitioning: A Conditional Inference Framework_](https://scholar.google.com/scholar?hl=en&as_sdt=0%2C7&q=conditional+inference+trees+survival+models&btnG=)
+
 
 ### `party:::`[`cforest`](https://rdrr.io/cran/party/man/cforest.html)
 
@@ -573,6 +649,8 @@ predictSurvProb(pec_cforest_mod, newdata = test_pred, times = .times)
 [2,] 0.947 0.451 0.0472
 ```
 
+_References_: [_Unbiased Recursive Partitioning: A Conditional Inference Framework_](https://scholar.google.com/scholar?hl=en&as_sdt=0%2C7&q=conditional+inference+trees+survival+models&btnG=)
+
 
 ### `randomForestSRC:::`[`rfsrc`](https://rdrr.io/cran/randomForestSRC/man/rfsrc.html)
 
@@ -590,7 +668,7 @@ predict(rfsrce_mod, test_pred)$predicted
 ```
 
 ```
-[1]  56.1 142.9
+[1]  56.6 143.8
 ```
 
 The `survival` slot appears to be survival probabilities:
@@ -604,21 +682,21 @@ round(rfsrce_pred$survival, 2)
 ```
      [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10] [,11] [,12] [,13] [,14] [,15] [,16] [,17]
 [1,] 1.00 0.98 0.98 0.98 0.98 0.97 0.97 0.97 0.95  0.93  0.93  0.93  0.93  0.93  0.93  0.92  0.92
-[2,] 0.97 0.97 0.97 0.97 0.96 0.96 0.96 0.93 0.93  0.93  0.92  0.90  0.87  0.84  0.84  0.84  0.83
+[2,] 0.97 0.97 0.97 0.97 0.96 0.96 0.96 0.93 0.93  0.93  0.92  0.90  0.86  0.84  0.84  0.84  0.83
      [,18] [,19] [,20] [,21] [,22] [,23] [,24] [,25] [,26] [,27] [,28] [,29] [,30] [,31] [,32]
-[1,]  0.92  0.92  0.92  0.92  0.92  0.92  0.92  0.92  0.92  0.92  0.92  0.90  0.90  0.90  0.87
-[2,]  0.80  0.77  0.75  0.75  0.74  0.72  0.71  0.69  0.68  0.65  0.62  0.62  0.61  0.57  0.57
+[1,]  0.92  0.92  0.92  0.92  0.92  0.92  0.92  0.92  0.92  0.92  0.92  0.90   0.9  0.90  0.88
+[2,]  0.80  0.77  0.75  0.75  0.74  0.72  0.71  0.69  0.68  0.65  0.62  0.62   0.6  0.57  0.57
      [,33] [,34] [,35] [,36] [,37] [,38] [,39] [,40] [,41] [,42] [,43] [,44] [,45] [,46] [,47]
-[1,]  0.87  0.87  0.85  0.85  0.85  0.85  0.85  0.85  0.85  0.84  0.84  0.81  0.81  0.81  0.78
-[2,]  0.56  0.52  0.52  0.51  0.50  0.48  0.48  0.48  0.48  0.48  0.47  0.47  0.45  0.44  0.44
+[1,]  0.88  0.88  0.85  0.85  0.85  0.85  0.85  0.85  0.85  0.84  0.84  0.81  0.81  0.81  0.78
+[2,]  0.56  0.52  0.52  0.51  0.50  0.48  0.48  0.48  0.48  0.48  0.47  0.47  0.45  0.43  0.43
      [,48] [,49] [,50] [,51] [,52] [,53] [,54] [,55] [,56] [,57] [,58] [,59] [,60] [,61] [,62]
-[1,]  0.78  0.78  0.78  0.75  0.74  0.74  0.74  0.74  0.74  0.74  0.74  0.73  0.73  0.73  0.73
-[2,]  0.42  0.41  0.39  0.39  0.39  0.36  0.33  0.31  0.30  0.30  0.30  0.30  0.28  0.28  0.27
+[1,]  0.78  0.78  0.78  0.74  0.74  0.74  0.74  0.74  0.74  0.74  0.74  0.73  0.73  0.73  0.73
+[2,]  0.42  0.40  0.38  0.38  0.38  0.36  0.32  0.31  0.29  0.29  0.29  0.29  0.28  0.28  0.26
      [,63] [,64] [,65] [,66] [,67] [,68] [,69] [,70] [,71] [,72] [,73] [,74] [,75] [,76] [,77]
-[1,]  0.72  0.72  0.69  0.69  0.69  0.69  0.68  0.68  0.67  0.64  0.64  0.64  0.63  0.61  0.61
-[2,]  0.27  0.24  0.24  0.22  0.18  0.17  0.16  0.14  0.14  0.14  0.14  0.14  0.14  0.14  0.09
+[1,]  0.71  0.71  0.69  0.69  0.69  0.68  0.68  0.68  0.67  0.63  0.63  0.63  0.63  0.60  0.60
+[2,]  0.26  0.23  0.23  0.21  0.17  0.16  0.16  0.14  0.14  0.14  0.14  0.14  0.14  0.14  0.08
      [,78] [,79] [,80] [,81] [,82] [,83] [,84] [,85] [,86] [,87] [,88] [,89] [,90] [,91] [,92]
-[1,]  0.61  0.57  0.57  0.53  0.51  0.51  0.51  0.48  0.44  0.43  0.40  0.39  0.35  0.34  0.30
+[1,]  0.60  0.57  0.56  0.53  0.50  0.50  0.50  0.48  0.43  0.42  0.39  0.39  0.34  0.33  0.30
 [2,]  0.06  0.06  0.05  0.05  0.05  0.03  0.02  0.02  0.02  0.02  0.02  0.02  0.02  0.02  0.02
      [,93] [,94] [,95] [,96] [,97] [,98] [,99] [,100] [,101] [,102] [,103] [,104] [,105] [,106]
 [1,]  0.30  0.25  0.25  0.23  0.23  0.17  0.12   0.12   0.05   0.05   0.05   0.04   0.03   0.03
@@ -659,67 +737,7 @@ summary(train_dat$time)
    0.44    2.83    4.89    5.55    7.38   20.19 
 ```
 
-### `ranger:::`[`ranger`](https://rdrr.io/cran/ranger/man/ranger.html)
-
-
-```r
-library(ranger)
-ranger_mod <- ranger(Surv(time, status) ~ X1 + X2, data = train_dat, num.trees = 1000)
-```
-
-The `predict` function generates an object with class `"ranger.prediction"`. 
-
-
-```r
-ranger_pred = predict(ranger_mod, test_pred)
-str(ranger_pred)
-```
-
-```
-List of 7
- $ num.trees                : num 1000
- $ num.independent.variables: num 2
- $ unique.death.times       : num [1:200] 0.435 0.537 0.549 0.603 0.635 ...
- $ num.samples              : int 2
- $ treetype                 : chr "Survival"
- $ chf                      : num [1:2, 1:200] 0 0.172 0 0.172 0 ...
- $ survival                 : num [1:2, 1:200] 1 0.842 1 0.842 1 ...
- - attr(*, "class")= chr "ranger.prediction"
-```
-
-The `unique.death.times` slot has the unique death times:
-
-
-```r
-all(sort(unique(train_dat$time)) == ranger_pred$unique.death.times)
-```
-
-```
-[1] TRUE
-```
-
-The `survival` slot contains a matrix of predicted survival curves, with a row for each test case and a column for each death time. The `chf` slot is the same for the cumulative hazard function:
-
-
-```r
-ranger_pred$survival[, 1:5]
-```
-
-```
-      [,1]  [,2]  [,3]  [,4]  [,5]
-[1,] 1.000 1.000 1.000 1.000 1.000
-[2,] 0.842 0.842 0.842 0.842 0.842
-```
-
-```r
-ranger_pred$chf[, 1:5]
-```
-
-```
-      [,1]  [,2]  [,3]  [,4]  [,5]
-[1,] 0.000 0.000 0.000 0.000 0.000
-[2,] 0.172 0.172 0.172 0.172 0.172
-```
+_References_: [_Random survival forests_](https://scholar.google.com/scholar?hl=en&as_sdt=0%2C7&q=Random+survival+forests+for+R&btnG=)
 
 
 # Model Prediction Scorecard
@@ -748,6 +766,13 @@ In most cases, the open circle means that this type of prediction is facilitated
    <td style="text-align:left;"> `flexsurv` </td>
    <td style="text-align:left;"> `flexsurvreg` </td>
    <td style="text-align:left;"> ✓ </td>
+   <td style="text-align:left;"> ✓ </td>
+   <td style="text-align:left;"> ✓ </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> `casebase` </td>
+   <td style="text-align:left;"> `fitSmoothHazard` </td>
+   <td style="text-align:left;"> x </td>
    <td style="text-align:left;"> ✓ </td>
    <td style="text-align:left;"> ✓ </td>
   </tr>
@@ -805,13 +830,6 @@ In most cases, the open circle means that this type of prediction is facilitated
    <td style="text-align:left;"> `rfsrc` </td>
    <td style="text-align:left;"> ✓ </td>
    <td style="text-align:left;"> ◯ </td>
-   <td style="text-align:left;"> x </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> `ranger` </td>
-   <td style="text-align:left;"> `ranger` </td>
-   <td style="text-align:left;"> ◯ </td>
-   <td style="text-align:left;"> ✓ </td>
    <td style="text-align:left;"> x </td>
   </tr>
 </tbody>
