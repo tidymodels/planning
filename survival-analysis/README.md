@@ -1,7 +1,3 @@
----
-always_allow_html: true
----
-
 
 
 # Survival Methods in tidymodels
