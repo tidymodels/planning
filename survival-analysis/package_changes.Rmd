@@ -8,7 +8,7 @@ These are notes from a session where we discussed the required changes to tidymo
 
 * Where does the user specify the time points for certain performance metrics (e.g. ROC methods)? There could be an option to the `tune` functions for this or it could be encoded into a metric set. In either case, the `.time` vector will be passed to the `parsnip` predict calls (when appropriate) so that the right predictions are created. We will _not_ have a `.time` argument to `yardstick` metrics since the times will be in the results of the prediction functions. 
 
-* `tune` has some functions that require the user to pick a metric. For example, `tune_bayes()` will optimize on the first metric in the metric set. Functions like `select_best()` or `autoplot()` have specific arguments for 1+ metrics. It is unclear how the use should pick a metric when some of them are computed at specific times. 
+* `tune` has some functions that require the user to pick a metric. For example, `tune_bayes()` will optimize on the first metric in the metric set. Functions like `select_best()` or `autoplot()` have specific arguments for 1+ metrics. It is unclear how the user should pick a metric when some of them are computed at specific times. 
 
 * There was some discussion about packages like `workflows` (and maybe `recipes`) making the time/event columns into a `Surv` object. This would simply the changes to `tune` and other packages but increase the complexity to `workflows`. 
 
