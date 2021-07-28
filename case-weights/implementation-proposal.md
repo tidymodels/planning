@@ -147,60 +147,64 @@ arguments:
     case weights, which would get extracted from `data` at `fit()` time
     and passed on to parsnip’s fitting functions.
 
--   `case_weights_keep`: a boolean flag, defaulting to `FALSE`, that
-    determines whether or not to *keep* the `case_weights` column in
+-   `case_weights_remove`: a boolean flag, defaulting to `TRUE`, that
+    determines whether or not to *remove* the `case_weights` column in
     `data` after it has been extracted, but before any pre-processing
     has been applied.
 
     -   For formula and variables pre-processors, you always want this
-        to be `FALSE`.
+        to be `TRUE`.
 
     -   For recipe pre-processors where no case weights are being used,
-        you want this to be `FALSE`.
+        you want this to be `TRUE`.
 
     -   For recipe pre-processors where you have *exactly the same* case
-        weights that will be passed on to you model, set this to `TRUE`
+        weights that will be passed on to you model, set this to `FALSE`
         to ensure that the specified `case_weights` column is retained
         in `data` for usage in the recipe.
 
 # hardhat
 
 The main problem that hardhat needs to overcome is knowing whether or
-not to require case weights at `forge()` time, as this affects how
-restrictive `workflows::predict()` is.
+not to require case weight columns at `forge()` time, as this affects
+how restrictive `workflows::predict()` is.
 
 In general, case weights should not be required for prediction. However,
-there are two places where we will need them.
+in some situations a recipe may require the `case_weights` column to be
+able to `bake()` new data (i.e. to make a prediction). We feel that this
+is relatively rare (one example of this is if `step_knn_impute()`
+hypothetically accepted case weights, which would also be required at
+bake-time).
 
--   A recipe may require the `case_weights` column to be able to
-    `bake()` new data.
+This problem only affects recipes, but is a little bit more general than
+just case weights. In general, it is possible for any non-standard
+recipes role (i.e. not `"outcome"` or `"predictor"`) to be required only
+at `prep()` time, and not at `bake()` time. In fact, this is probably
+the most common scenario.
 
--   In tune, we will need the `case_weights` column to be able to
-    compute case-weight adjusted performance metrics.
-
-The proposed change here is to give `hardhat::forge()` a new boolean
-`extras` argument that works similarly to `outcomes`. If `FALSE`, the
-`extras` slot of the forged result will be `NULL`, and no “extra” recipe
-roles will be returned or required.
-
--   The default would be `FALSE`, which would be slightly different from
-    the current behavior. Currently, `forge()` always checks that
-    `extra_role_ptypes` columns are present and of the correct type.
-    However, they are never used for prediction.
-
--   Possibly, if `case_weights_keep = TRUE` , we would change where
-    workflows calls `forge()` to set `extras = TRUE`, but otherwise it
-    would be up to recipes to error if a case weights extra column is
-    required but was dropped.
-
--   Possibly set `extras = c("case_weights")` if we also have other
-    extra roles that we do want, even though we don’t want case weights.
+Because of this, the proposed change here is for `forge()` to only
+require the `"outcome"` and `"predictor"` role columns by default, and
+ignore the non-standard roles. Even if those columns existed, by default
+they would not be passed on to the internal `bake()` call and would not
+be returned in the `forge()$extras$roles` slot. To override this,
+`hardhat::default_recipe_blueprint()` would gain a new argument,
+`extra_bake_roles`, that would accept a character vector of non-standard
+roles that are actually required at bake time.
 
 # tune
 
--   Needs a user specified way to not use model case weights for
-    prediction performance.
+Most of the changes from above would automatically flow through to tune.
+However, tune will still need to be able to extract the `case_weights`
+column from the assessment data if the user requested case-weighted
+performance calculations. This requires accessing the name of the case
+weight column specified in the workflow (which may be through some
+helper that workflows exports), which can then be used to extract the
+relevant column from the assessment data.
 
--   Needs to be able to collect `assessment()` set data, then `forge()`
-    them with `extras = TRUE` (if user is requesting case weighted
-    prediction performance) specified through `forge_from_workflow()`.
+tune internally calls `forge_from_workflow()`, but this is only for
+computing the predictions themselves, and the case weights column will
+not be extracted from the result of this.
+
+tune also needs a user specified way to opt out of using model case
+weights for performance calculations, which will likely be through a
+control argument.
