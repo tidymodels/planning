@@ -45,7 +45,7 @@ parsnip is slowly becoming more of a "lower level" package, in that you specify 
 
     -   Consider `y ~ x + case_weights(z)`
 
-It will be up to parsnip to check if a specific model allows weights or not, and possibly error at `fit()` time if weights were specified for a model that doesn't support them.
+It will be up to parsnip to check if a specific model allows weights or not, and possibly error at `fit()` time if weights were specified for a model that doesn't support them. It might make sense to add a new flag to the `set_encoding()` functions that define new models (example [here](https://github.com/tidymodels/parsnip/blob/master/R/linear_reg_data.R#L22:L32)) to check for the ability for a model to use case weights. 
 
 # recipes
 

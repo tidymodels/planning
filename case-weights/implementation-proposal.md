@@ -62,7 +62,9 @@ parsnip is slowly becoming more of a “lower level” package, in that you
 specify the model spec but rarely use `parsnip::fit()` directly, instead
 going through a workflow or using tune. Because of that, I think that
 `parsnip::fit()` and `fit_xy()` should get a new `case_weights` argument
-that simply accepts a vector of weights.
+that simply accepts a vector of weights. It might make sense to add a 
+new flag to the `set_encoding()` functions that define new models (example [here](https://github.com/tidymodels/parsnip/blob/master/R/linear_reg_data.R#L22:L32))
+to check for the ability for a model to use case weights. 
 
 -   This is the obvious choice for
     `fit_xy(x, y, …, case_weights = NULL)` , where `x` and `y` are
