@@ -393,7 +393,7 @@ predictSurvProb(cph_mod, newdata = test_pred, times = .times)
 [2,] 0.846 0.118 2.29e-06
 ```
 
-See the document ["cox_notes_extra"](https://github.com/tidymodels/planning/blob/master/survival-analysis/cox_notes_extra.md) file for more notes about this model. 
+See the document ["cox_notes_extra"](https://github.com/tidymodels/planning/blob/main/survival-analysis/cox_notes_extra.md) file for more notes about this model. 
 
 _References_: [_A package for survival analysis in R_ (pdf)](https://cran.r-project.org/web/packages/survival/vignettes/survival.pdf)
 
