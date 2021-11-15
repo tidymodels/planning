@@ -1,3 +1,8 @@
+---
+output: github_document
+always_allow_html: true
+---
+
 ```{r, load_libs, message = FALSE, warning = FALSE, echo = FALSE, results = 'hide'}
 library(prodlim)
 library(survival)
