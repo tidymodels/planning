@@ -733,7 +733,10 @@ forests*](https://scholar.google.com/scholar?hl=en&as_sdt=0%2C7&q=Random+surviva
 -   recurrent event model via: `survival::coxph()`, `rms::cph()`
 -   multi-state models via: `survival::coxph()` (note: no prediction
     method for multi-state models yet), the `mstate` and `msm` package,
-    the `SemiMarkov` package, the `gamboostMSM` package
+    the `SemiMarkov` package, the `gamboostMSM` package. Additional
+    note: We’ll have to see what we do with model specification here,
+    e.g., `survival::coxph()` allows for a list of formulas which
+    parsnip currently does not.
 -   joint frailty models via the `frailtypack` package
 -   Multi-task Logistic Regression (MTLR) via the `MLTR` package
 -   Bayesian model via `rstanarm::stan_surv()` (in `rstanarm`
