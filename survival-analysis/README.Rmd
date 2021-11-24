@@ -1,3 +1,8 @@
+---
+output: github_document
+always_allow_html: true
+---
+
 ```{r, load_libs, message = FALSE, warning = FALSE, echo = FALSE, results = 'hide'}
 library(prodlim)
 library(survival)
@@ -447,6 +452,16 @@ summary(train_dat$time)
 ```
 
 _References_: [_Random survival forests_](https://scholar.google.com/scholar?hl=en&as_sdt=0%2C7&q=Random+survival+forests+for+R&btnG=)
+
+
+## Further Candidate Models to Explore
+
+- competing risks model via: the `cmprsk` package, `survival::survfit()`, `survival::coxph()`
+- recurrent event model via: `survival::coxph()`, `rms::cph()`
+- multi-state models via: `survival::coxph()` (note: no prediction method for multi-state models yet), the `mstate` and `msm` package, the `SemiMarkov` package, the `gamboostMSM` package. Additional note: We'll have to see what we do with model specification here, e.g., `survival::coxph()` allows for a list of formulas which parsnip currently does not.
+- joint frailty models via the `frailtypack` package
+- Multi-task Logistic Regression (MTLR) via the `MLTR` package
+- Bayesian model via `rstanarm::stan_surv()` (in `rstanarm` development version)
 
 
 # Model Prediction Scorecard
