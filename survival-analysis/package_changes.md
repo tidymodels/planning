@@ -10,8 +10,6 @@ These are notes from a session where we discussed the required changes to tidymo
 
 * There was some discussion about packages like `workflows` (and maybe `recipes`) making the time/event columns into a `Surv` object. This would simplify the changes to `tune` and other packages but increase the complexity to `workflows`. Our current thinking is to require the user to make a `Surv` object in a column in the data frame, prior to any analysis. This follows the recommendation to do any modifications of the response prior to recipes etc.
 
-* The possibility of adding a subclass to `model_fit` objects for these types of models. 
-
 Details on changes, per package, follow. 
 
 ## parsnip
