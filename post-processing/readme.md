@@ -4,6 +4,8 @@ execute:
   keep-md: true
 ---
 
+
+
 # Tidyup X: Adding post-processing operations to workflows
 
 **Champion**: Max
@@ -27,9 +29,10 @@ After modeling is complete there are occasions where model outputs, mostly predi
 
 The plan is to have a small set of à la carte functions for specific operations. For example, let's look at a binary classification model with calibration and threshold optimization: 
 
-```{r}
-#| eval: false
 
+::: {.cell}
+
+```{.r .cell-code}
 wflow_2 <- 
   workflow() %>% 
   add_formula(Class ~ .) %>% 
@@ -40,6 +43,8 @@ wflow_individ <-
   add_prob_calibration(cal_object) %>% 
   add_prob_threshold(threshold = 0.7)
 ```
+:::
+
 
 The new `add_*` functions would have `update_*()` and `remove_*()` analogs or overall functions that conduct those operations for all of the different post-processors. 
 
@@ -118,18 +123,12 @@ The dwai code may eventually make its way into workflows or probably.
 
 Workflows already contain a placeholder for post-processing: 
 
-```{r}
-#| include: false
-library(tidymodels)
 
-# ------------------------------------------------------------------------------
 
-tidymodels_prefer()
-theme_set(theme_bw())
-options(pillar.advice = FALSE, pillar.min_title_chars = Inf)
-```
 
-```{r}
+::: {.cell}
+
+```{.r .cell-code}
 library(tidymodels)
 
 wflow_1 <- 
@@ -138,6 +137,14 @@ wflow_1 <-
   add_formula(mpg ~ .)
 names(wflow_1)
 ```
+
+::: {.cell-output .cell-output-stdout}
+```
+[1] "pre"     "fit"     "post"    "trained"
+```
+:::
+:::
+
 
 There are also existing helper functions that may be relevant: 
 
