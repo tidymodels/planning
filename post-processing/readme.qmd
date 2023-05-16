@@ -45,11 +45,11 @@ The new `add_*` functions would have `update_*()` and `remove_*()` analogs or ov
 
 Note that the order of operations matter. In the above example, the system should execute the calibration before thresholding the probabilities since the calibration will change the data in a way that invalidates the new threshold. 
 
-However, the order that the operations are added to the worklflow should not matter. There are some rules that can be enacted (e.g. calibration before thresholding) but  the proposed solution is to have a prioritization scheme that can be, within reason, altered by the user. Each `add_*` function will have a `.priority` argument that has reasonable defaults (with one exception, see below).  
+However, the order that the operations are added to the workflow should not matter. There are some rules that can be enacted (e.g. calibration before thresholding) but the proposed solution is to have a prioritization scheme that can be, within reason, altered by the user. Each `add_*` function will have a `.priority` argument that has reasonable defaults (with one exception, see below).  
 
 ### Current list of post-processors
 
-* Calibration of probability estimates to increase their probabilistic fidelity to the observed data
+* Calibration of probability estimates to increase their probabilistic fidelity to the observed data.
 
 ```r
 # 'object' is a pre-made calibration object
@@ -85,9 +85,9 @@ add_cls_eq_zone(value = numeric(), threshold = numeric(), .priority = 3.0)
 add_reg_calibration(object, .priority = 1.0)
 ```
 
-* A general "mutate" operations where users can do on-the-fly operations using self-contained functions. For example,
+* A general "mutate" operation where users can do on-the-fly operations using self-contained functions. For example,
 
-  - If a user log-transformed their data prior to model, then can exponentiate them here. 
+  - If a user log-transformed their data prior to modeling, they can exponentiate here. 
   - For regression models, the predictions can be thresholded to be within a specific range. 
 
 ```r
@@ -101,7 +101,7 @@ This is likely to be a fairly complete menu of possible options. For example, at
 
 ## Implementation
 
-There are implementation issues within the workflows and tune packages to discuss. There is also the idea that a small side-package will keep the underlying functions and data structures (for now at least). We'll tentatively call this the `dwai`  package (pronounced "duh-why" and short for Don't Worry About It).
+There are implementation issues within the workflows and tune packages to discuss. There is also the idea that a small side-package will keep the underlying functions and data structures (for now at least). We'll tentatively call this the `dwai` package (pronounced "duh-why" and short for Don't Worry About It).
 
 ### dwai
 
@@ -110,7 +110,7 @@ This package will contain
  - A container for the list of possible post-processors specified by the user.
  - A validation system to resolve conflicts in type or priority. 
  - An interface to apply the operations to the predicted values. 
- - The requisite package dependencies (primarily the probably package)
+ - The requisite package dependencies (primarily the probably package).
  
 The dwai code may eventually make its way into workflows or probably. 
 
