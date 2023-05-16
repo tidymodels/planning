@@ -19,7 +19,7 @@ tidymodels workflow objects include pre-processing and modeling steps. Pre-proce
 
 ## Motivation
 
-After modeling is complete there are occasions where model outputs, mostly predictions, might requirement modification. For example, calibration of model predictions is an effective technique for improving models. Also, some users may wish to optimize the probability threshold to call a sample an event (in a binary classification problem). 
+After modeling is complete there are occasions where model outputs, mostly predictions, might require modification. For example, calibration of model predictions is an effective technique for improving models. Also, some users may wish to optimize the probability threshold to call a sample an event (in a binary classification problem). 
 
 ## Solution
 
@@ -43,7 +43,7 @@ wflow_individ <-
 
 The new `add_*` functions would have `update_*()` and `remove_*()` analogs or overall functions that conduct those operations for all of the different post-processors. 
 
-Note that the order of operations matter. In the above example, the system should execute the calibration before threshold the probabilities since the calibration will change the data in a way that invalidates the new threshold. 
+Note that the order of operations matter. In the above example, the system should execute the calibration before thresholding the probabilities since the calibration will change the data in a way that invalidates the new threshold. 
 
 However, the order that the operations are added to the worklflow should not matter. There are some rules that can be enacted (e.g. calibration before thresholding) but  the proposed solution is to have a prioritization scheme that can be, within reason, altered by the user. Each `add_*` function will have a `.priority` argument that has reasonable defaults (with one exception, see below).  
 
