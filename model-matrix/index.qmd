@@ -1,0 +1,106 @@
+---
+title: "model.matrix() replacement"
+format: html
+---
+
+We have been running into issues with `model.matrix()` and `model.frame()` over the years. We also haven't done anything with it because it is quite a big task.
+
+I believe that a replacement is needed, so I'm gathering our requirements here so we can build it right the first time. 
+
+Old notes from Max, which lead to {recipes} but still has information about `model.matrix()`
+- <https://rviews.rstudio.com/2017/02/01/the-r-formula-method-the-good-parts/>
+- <https://rviews.rstudio.com/2017/03/01/the-r-formula-method-the-bad-parts/>
+
+# What we don't want
+
+## Remove ancillary features (subsets, filters)
+
+As shown with the `subset` argument to `model.frame()`
+
+```{r}
+model.frame(mpg ~ ., data = mtcars, subset = disp < 100)
+```
+
+## Don't allow special functions
+
+ There are special functions that can be defined and used (e.g. `offset`). We don't want those.
+
+```{r}
+model.frame(mpg ~ wt + vs + am + offset(disp), data = mtcars)
+```
+
+# What we want
+
+## Redefine terms
+
+The `terms` attribute that comes out of `model.frame()` would be reorganized under this format. Right now they look something like this.
+
+```{r}
+model.frame(~ ., data = iris) |>
+  attr("terms")
+```
+
+## Sparse matrix for terms
+
+Notice how the `attr(,"factors")` element tends to be a quite sparse matrix? We should encode it differently, especially for very wide data which is becoming more common.
+
+```{r}
+model.frame(~ ., data = mtcars) |>
+  attr("terms")
+```
+
+## Allow subsets of predictors to be processed
+
+## Custom delimiters
+
+## Merge `model.frame()` and `model.matrix()`
+
+Right now you end up using two functions. Would be nice just to have one main function.
+
+## API to stop dummies
+
+Some API to determine which factors should be converted to dummy variables (for example, not id variables, etc)
+
+## Early returns
+
+This is fairly self-explanatory, but many simple formulas don't require much work or could be done simply. Having something reasonable could give us some nice speed ups.
+
+Silly reprex:
+
+``` r
+early_exit <- function(formula, data) {
+ if (identical(rlang::f_rhs(formula), quote(. - 1)) &&
+      all(vapply(data, is.numeric, logical(1)))) {
+ data <- as.matrix(data) 
+    attr(data, "assign") <- seq_len(ncol(data))
+    return(data)
+ }
+  stop("not right")
+}
+
+formula <- ~ . - 1
+
+bench::mark(
+  model.matrix(formula, mtcars),
+  early_exit(formula, mtcars)
+)
+#> # A tibble: 2 × 6
+#>   expression                         min   median `itr/sec` mem_alloc `gc/sec`
+#>   <bch:expr>                    <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
+#> 1 model.matrix(formula, mtcars)  236.9µs  254.2µs     3867.   315.1KB     34.4
+#> 2 early_exit(formula, mtcars)     35.4µs   37.9µs    24899.    80.6KB     39.9
+```
+
+## No reliance on global options
+
+This has bitten us a lot. Options such as contrasts should be passed in as an argument and not depend on the global state.
+
+## `model_tibble()` and `model_data_frame()`
+
+There are times when we want the output of `model.matrix()` to be a tibble or data.frame, such as in [hardhat::model_matrix()](https://github.com/tidymodels/hardhat/blob/main/R/model-matrix.R#L80-L97). 
+
+I don't think it would be unreasonable to keep the object as a data.frame when doing the transformations. This would allow us to handle sparse tibbles natively.
+
+# Related work
+
+- <https://github.com/simonpcouch/mdl>
