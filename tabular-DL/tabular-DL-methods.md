@@ -29,6 +29,15 @@ serialization for deployment, etc.
 Below is a list of potential models. We should pick through these
 judiciously.
 
+I also plan on doing a lot more with TabPFN:
+
+- Model checkpointing (and caching)
+- Enable some of the [extension
+  packages](https://github.com/priorlabs/tabpfn-extensions).
+- Proper tidymodels integration, including quantile and censored
+  regression models.
+- More examples and benchmarking.
+
 ### Regularization Learning Networks
 
 References:
