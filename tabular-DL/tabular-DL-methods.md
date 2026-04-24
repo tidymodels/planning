@@ -19,7 +19,8 @@ There are two strategies for making tabular DL models available in R:
 
 A local implementation is preferred, but it’s also likely to be the
 exception, since the Python packages might have other dependencies we
-don’t want to deal with.
+don’t want to deal with. [TabNet](https://mlverse.github.io/tabnet/) is
+a great example of this.
 
 For the latter, we should make it easy for users to install the
 appropriate Python packages, add model checkpointing, implement proper
