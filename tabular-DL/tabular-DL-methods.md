@@ -257,6 +257,7 @@ References:
 Implementations:
 
 - <https://github.com/AI-sandbox/iLTM>
+- <https://github.com/frankiethull/iltm>
 
 ### TabICLv2
 
@@ -272,3 +273,111 @@ References:
 Implementations:
 
 - <https://github.com/soda-inria/tabicl>
+- <https://github.com/frankiethull/tabicl>
+- <https://github.com/cregouby/TabICL2>
+
+### sap-rpt-1-oss (fka ConTextTab)
+
+References:
+
+- Marco Spinaci, Marek Polewczyk, Maximilian Schambach, Sam Thelin
+  (2025). [ConTextTab: A Semantics-Aware Tabular In-Context
+  Learner](https://arxiv.org/abs/2506.10707). arXiv preprint
+  arXiv:2506.10707.
+
+Implementations:
+
+- <https://github.com/SAP-samples/sap-rpt-1-oss>
+- <https://github.com/frankiethull/contexttab>
+
+### TabDPT
+
+References:
+
+- Junwei Ma and Valentin Thomas and Rasa Hosseinzadeh and Alex Labach
+  and Hamidreza Kamkari and Jesse C. Cresswell and Keyvan Golestan and
+  Guangwei Yu and Anthony L. Caterini and Maksims Volkovs (2025).
+  [TabDPT: Scaling Tabular Foundation Models on Real
+  Data](https://arxiv.org/abs/2410.18164). arXiv preprint
+  arXiv:2410.18164.
+
+Implementations:
+
+- <https://github.com/layer6ai-labs/TabDPT-inference>
+- <https://github.com/frankiethull/tabdpt>
+
+### LimiX
+
+References:
+
+- Zhang, Xingxuan and Ren, Gang and Yu, Han and Yuan, Hao and Wang, Hui
+  and Li, Jiansheng and Wu, Jiayun and Mo, Lang and Mao, Li and Hao,
+  Mingchao and others (2025). [LimiX: Unleashing Structured-Data
+  Modeling Capability for Generalist
+  Intelligence](https://arxiv.org/abs/2509.03505). arXiv preprint
+  arXiv:2509.03505.
+
+Implementations:
+
+- <https://github.com/limix-ldm-ai/LimiX>
+- <https://github.com/frankiethull/limix>
+
+### Mitra
+
+References:
+
+- Xiyuan Zhang, Danielle C. Maddix, Junming Yin, Nick Erickson, Abdul
+  Fatir Ansari, Boran Han, Shuai Zhang, Leman Akoglu, Christos
+  Faloutsos, Michael W. Mahoney, Cuixiong Hu, Huzefa Rangwala, George
+  Karypis, Bernie Wang (2025). [Mitra: Mixed Synthetic Priors for
+  Enhancing Tabular Foundation
+  Models](https://arxiv.org/abs/2510.21204). arXiv preprint
+  arXiv:2510.21204.
+
+Implementations:
+
+- <https://github.com/autogluon/autogluon>
+- <https://github.com/frankiethull/mitra>
+
+### Orion-Bix
+
+References:
+
+- Mohamed Bouadi, Pratinav Seth, Aditya Tanna, Vinay Kumar Sankarapu
+  (2025).[Orion-Bix: Bi-Axial Attention for Tabular In-Context
+  Learning](https://arxiv.org/abs/2512.00181). arXiv preprint
+  arXiv:2512.00181.
+
+Implementations:
+
+- <https://github.com/Lexsi-Labs/Orion-BiX>
+- <https://github.com/frankiethull/orion>
+
+### Orion-MSP
+
+References:
+
+- Mohamed Bouadi, Pratinav Seth, Aditya Tanna, Vinay Kumar Sankarapu
+  (2025). [Orion-MSP: Multi-Scale Sparse Attention for Tabular
+  In-Context Learning](https://arxiv.org/abs/2511.02818). arXiv preprint
+  arXiv:2511.02818.
+
+Implementations:
+
+- <https://github.com/Lexsi-Labs/Orion-MSP>
+- <https://github.com/frankiethull/orion>
+
+### RealMLP
+
+References:
+
+- David Holzmüller, Léo Grinsztajn, Ingo Steinwart (2024). [Better by
+  Default: Strong Pre-Tuned MLPs and Boosted Trees on Tabular
+  Data](https://arxiv.org/abs/2407.04491). arXiv preprint
+  arXiv:2407.04491.
+
+Implementations:
+
+- <https://github.com/dholzmueller/realmlp-td-s_standalone>
+- <https://github.com/dholzmueller/pytabkit>
+- <https://github.com/frankiethull/realmlp>
