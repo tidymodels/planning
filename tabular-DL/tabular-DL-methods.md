@@ -381,3 +381,17 @@ Implementations:
 - <https://github.com/dholzmueller/realmlp-td-s_standalone>
 - <https://github.com/dholzmueller/pytabkit>
 - <https://github.com/frankiethull/realmlp>
+
+### KAN
+
+References:
+
+- Ziming Liu, Yixuan Wang, Sachin Vaidya, Fabian Ruehle, James
+  Halverson, Marin Soljačić, Thomas Y. Hou, Max Tegmark (2024). [KAN:
+  Kolmogorov-Arnold Networks](https://arxiv.org/abs/2404.19756). arXiv
+  preprint arXiv:2404.19756.
+
+Implementations:
+
+- <https://github.com/kindxiaoming/pykan>
+- <https://github.com/vpuri3/KolmogorovArnold.jl>
