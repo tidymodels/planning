@@ -1,0 +1,100 @@
+---
+title: "tidymodels and h2o integration"
+---
+
+
+
+
+## Grid search differences
+
+There are some differences between tidymodels grid tuning and h2o:
+
+* `h2o.grid()` seems to work on one resample at a time.
+* General grids (i.e., not Cartesian products) are not feasible. 
+* h2o has a more general methodology for processing the grid. tidymodels computes everything while h20 can setup time-based stopping criteria (and others, I think)
+
+There are some other potentially missing pieces described below.
+
+## Interactions between tidymodels and h2o
+
+Non-mutually exclusive approaches, ordered from least complex to most. 
+
+### parsnip integration
+
+This would be for one-off model fits. The code would look like:
+
+
+```r
+boost_fit <-
+  boost_tree(trees = 12, learn_rate = 0.1) %>% 
+  set_mode("regression") %>% 
+  set_engine("h2o", model_id = "gbm fit") %>% #<- extra options here
+  fit(mpg ~ ., data = mtcars)
+```
+
+This would create an h2o data frame, run the model, and return the object with the references it needs to make predictions. 
+
+We can write `tidy()` and serialize functions for saving the model. For simple models, we might be able to extract the coeffcients and write predict methods that just do basic matrix algebra. 
+This may already implemented in [`h2oparsnip`](https://github.com/stevenpawley/h2oparsnip) but I have not looked at the code in-depth. 
+
+### Resamples as chunks
+
+In R, have a method for `tune_grid()` that would do everything in R except the model fits. The loops for getting results across resamples would be in R and would look something like:
+
+
+```r
+# rs is a rsample object
+for (ind in seq_along(rs$splits)) {
+  mod <- 
+    rs$splits[[ind]] %>% 
+    analysis() %>% 
+    as.h2o()
+  val <- 
+    rs$splits[[ind]] %>% 
+    assessment() %>% 
+    as.h2o()
+  res <- 
+    h2o.grid("gbm", 
+             x = x_names, 
+             y = y_names,
+             grid_id = "gbm_grid1",
+             training_frame = mod,
+             validation_frame = val,
+             seed = seed,
+             hyper_params = grid_values)
+  # plus more options for metrics etc. 
+  
+  metrics <- foo("See notes below")
+  
+  if (control$save_pred) {
+    preds <- bar("See notes below")
+  }
+}
+```
+
+We accumulate these in a stage-wise fashion across resamples. 
+
+This is somewhat inefficient since we are passing data back and forth for each resample and it diminishes the efficiency of how h2o can process results. 
+
+Notes:
+
+* I don't think that there is a way for convert an `H2OGrid` to a data frame. Using `as.data.frame(gbm_grid1@summary_table)` is close but everything is character. 
+
+* I don't know how to get the holdout predictions either. 
+
+### Loop within h2o
+
+In this case, we would need to have an h2o api that we can call to give h2o:
+
+* The indices for the modeling and holdout data
+* The grid values
+* Seeds
+* Data details (the data frame and x/y names)
+
+then have h2o return
+
+* The holdout metrics and predictions for each grid/resample combination. 
+
+tidymodels would then fill in the slots for what the tune objects return. 
+
+
