@@ -54,6 +54,7 @@ References:
 Implementations:
 
 - <https://pytorch-tabular.readthedocs.io/en/latest/>
+- Max has a working R-torch version. PR soon
 
 ### Neural Oblivious Decision Ensembles (NODE)
 
@@ -89,6 +90,20 @@ References:
 Implementations:
 
 - <https://github.com/lucidrains/tab-transformer-pytorch>
+
+
+### ResNet
+
+References:
+
+- Gorishniy, Y., Rubachev, I., Khrulkov, V., & Babenko, A. (2021). [Revisiting deep learning models for tabular data](https://proceedings.neurips.cc/paper_files/paper/2021/hash/9d86d83f925f2149e9edb0ac3b49229c-Abstract.html). Advances in neural information processing systems, 34, 18932-18943. _see Equation 2_
+
+- [Scholar](https://scholar.google.com/scholar?hl=en&as_sdt=0%2C7&q=tabular+resnet+Gorishniy&btnG=)
+
+Implementations:
+
+- Brulee: <https://brulee.tidymodels.org/dev/reference/brulee_resnet.html>
+
 
 ### Gated Adaptive Network for Deep Automated Learning of Features (GANDALF)
 
@@ -182,17 +197,29 @@ References:
 
 - [Scholar](https://scholar.google.com/scholar?hl=en&as_sdt=0%2C7&q=ModernNCA+%22ye%22&btnG=)
 
-### ResNet
+
+### RealMLP
 
 References:
 
-- Gorishniy, Y., Rubachev, I., Khrulkov, V., & Babenko, A. (2021). [Revisiting deep learning models for tabular data](https://proceedings.neurips.cc/paper_files/paper/2021/hash/9d86d83f925f2149e9edb0ac3b49229c-Abstract.html). Advances in neural information processing systems, 34, 18932-18943. _see Equation 2_
-
-- [Scholar](https://scholar.google.com/scholar?hl=en&as_sdt=0%2C7&q=tabular+resnet+Gorishniy&btnG=)
+- David Holzmüller, Léo Grinsztajn, Ingo Steinwart (2024). [Better by Default: Strong Pre-Tuned MLPs and Boosted Trees on Tabular Data](https://arxiv.org/abs/2407.04491). arXiv preprint arXiv:2407.04491.
 
 Implementations:
 
-- Brulee (currently in a branch): <https://github.com/tidymodels/brulee/tree/resnet>
+- <https://github.com/dholzmueller/realmlp-td-s_standalone>
+- <https://github.com/dholzmueller/pytabkit>
+- <https://github.com/frankiethull/realmlp>
+
+### KAN
+
+References: 
+
+- Ziming Liu, Yixuan Wang, Sachin Vaidya, Fabian Ruehle, James Halverson, Marin Soljačić, Thomas Y. Hou, Max Tegmark (2024). [KAN: Kolmogorov-Arnold Networks](https://arxiv.org/abs/2404.19756). arXiv preprint arXiv:2404.19756.
+
+Implementations: 
+
+- <https://github.com/kindxiaoming/pykan>
+- <https://github.com/vpuri3/KolmogorovArnold.jl>
 
 ### iLTM: Integrated Large Tabular Model
 
@@ -287,25 +314,15 @@ Implementations:
 - <https://github.com/Lexsi-Labs/Orion-MSP>
 - <https://github.com/frankiethull/orion>
 
-### RealMLP
+### Chronos2
 
 References:
 
-- David Holzmüller, Léo Grinsztajn, Ingo Steinwart (2024). [Better by Default: Strong Pre-Tuned MLPs and Boosted Trees on Tabular Data](https://arxiv.org/abs/2407.04491). arXiv preprint arXiv:2407.04491.
+- Ansari, A. F., Shchur, O., Küken, J., Auer, A., Han, B., Mercado, P., ... & Bohlke-Schneider, M. (2025). [Chronos-2: From univariate to universal forecasting](). arXiv preprint arXiv:2510.15821.
+
+- [Scholar](https://scholar.google.com/scholar?hl=en&as_sdt=0%2C7&q=%22Chronos-2%22+forecasting&btnG=)
 
 Implementations:
 
-- <https://github.com/dholzmueller/realmlp-td-s_standalone>
-- <https://github.com/dholzmueller/pytabkit>
-- <https://github.com/frankiethull/realmlp>
-
-### KAN
-
-References: 
-
-- Ziming Liu, Yixuan Wang, Sachin Vaidya, Fabian Ruehle, James Halverson, Marin Soljačić, Thomas Y. Hou, Max Tegmark (2024). [KAN: Kolmogorov-Arnold Networks](https://arxiv.org/abs/2404.19756). arXiv preprint arXiv:2404.19756.
-
-Implementations: 
-
-- <https://github.com/kindxiaoming/pykan>
-- <https://github.com/vpuri3/KolmogorovArnold.jl>
+- https://huggingface.co/amazon/chronos-2
+-  Max has a working R-torch version. PR soon
